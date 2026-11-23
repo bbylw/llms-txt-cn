@@ -2,7 +2,7 @@
  *  that opens it in the zoom dialog, and keeps that right as images load,
  *  appear (a tab or disclosure opening) or the viewport changes. */
 
-import { lockScroll, mount, unlockScroll } from "@cloudflare/nimbus-docs/client";
+import { mount } from "@cloudflare/nimbus-docs/client";
 
 // Below this gain, zooming isn't worth a button (a phone screenshot already
 // fills the column).
@@ -73,17 +73,24 @@ mount("[data-nb-image-zoom]", (root) => {
     media = clone;
     opener = trigger;
     dialog.showModal();
-    lockScroll();
   };
 
   const onContentClick = (event: MouseEvent) => {
     const trigger = (event.target as Element).closest<HTMLElement>(TRIGGER);
     if (trigger && content.contains(trigger)) open(trigger);
   };
-  // Esc, the close button, or a click anywhere closes it.
-  const onDialogClick = () => dialog.close();
+  // Clicking the zoomed image closes preview; backdrop uses declarative `closedby="any"`
+  // and close button uses `command="close"` with progressive fallbacks below.
+  const onMediaClick = (event: MouseEvent) => {
+    const target = event.target as Element | null;
+    if (target && target.closest(".nb-zoom-img")) dialog.close();
+  };
+  const onFallbackBackdrop = (event: MouseEvent) => {
+    if (event.target === dialog) dialog.close();
+  };
+  const closeBtn = dialog.querySelector<HTMLButtonElement>("[data-nb-zoom-close]");
+  const onFallbackCloseBtn = () => dialog.close();
   const onClose = () => {
-    unlockScroll();
     opener?.focus();
     opener = null;
   };
@@ -98,21 +105,29 @@ mount("[data-nb-image-zoom]", (root) => {
   for (const img of images) observer.observe(img);
 
   content.addEventListener("click", onContentClick);
-  dialog.addEventListener("click", onDialogClick);
+  dialog.addEventListener("click", onMediaClick);
+  if (!("closedBy" in HTMLDialogElement.prototype)) {
+    dialog.addEventListener("click", onFallbackBackdrop);
+  }
+  if (!("commandForElement" in HTMLButtonElement.prototype)) {
+    closeBtn?.addEventListener("click", onFallbackCloseBtn);
+  }
   dialog.addEventListener("close", onClose);
   addEventListener("resize", schedule);
 
   return () => {
     content.removeEventListener("click", onContentClick);
-    dialog.removeEventListener("click", onDialogClick);
+    dialog.removeEventListener("click", onMediaClick);
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      dialog.removeEventListener("click", onFallbackBackdrop);
+    }
+    if (!("commandForElement" in HTMLButtonElement.prototype)) {
+      closeBtn?.removeEventListener("click", onFallbackCloseBtn);
+    }
     dialog.removeEventListener("close", onClose);
     removeEventListener("resize", schedule);
     observer.disconnect();
     cancelAnimationFrame(frame);
-    // `close` fires later, after the page has gone; release the lock now.
-    if (dialog.open) {
-      dialog.close();
-      unlockScroll();
-    }
+    if (dialog.open) dialog.close();
   };
 });

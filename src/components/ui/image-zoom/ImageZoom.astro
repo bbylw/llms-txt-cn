@@ -9,9 +9,9 @@
 import Icon from "@cloudflare/nimbus-docs/components/Icon.astro";
 ---
 
-<dialog data-slot="image-zoom" data-nb-image-zoom aria-label="Enlarged image" class="nb-zoom">
+<dialog id="nb-image-zoom-dialog" data-slot="image-zoom" data-nb-image-zoom closedby="any" aria-label="放大查看图片" class="nb-zoom">
   <img alt="" class="nb-zoom-img" />
-  <button type="button" data-nb-zoom-close aria-label="Close" class="nb-zoom-close">
+  <button type="button" command="close" commandfor="nb-image-zoom-dialog" data-nb-zoom-close aria-label="关闭大图" class="nb-zoom-close">
     <Icon name="ph:x" class="h-5 w-5" />
   </button>
 </dialog>

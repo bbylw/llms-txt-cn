@@ -8,6 +8,7 @@
 
 :root {
 	color-scheme: light dark;
+	accent-color: var(--nb-brand);
 
 	&:has(> head > meta[name="color-scheme"][content="dark"]) {
 		color-scheme: dark;
@@ -125,6 +126,60 @@
 }
 
 /* ---- Dark mode (#000000, #181818, #1F1F1F, #272727, #313131) ---- */
+@media (prefers-color-scheme: dark) {
+	:root:not(:has(> head > meta[name="color-scheme"][content="light"])) {
+		--nb-background: #000000;
+		--nb-foreground: #fafafa;
+
+		--nb-card: #181818;
+		--nb-card-foreground: var(--nb-foreground);
+
+		--nb-muted: #1f1f1f;
+		--nb-muted-foreground: #a3a3a3;
+
+		--nb-accent: #272727;
+		--nb-accent-foreground: var(--nb-foreground);
+
+		--nb-primary: #ffffff;
+		--nb-primary-foreground: #000000;
+		--nb-primary-hover: #e5e5e5;
+
+		--nb-brand: #93c5fd;
+		--nb-brand-wash: color-mix(in oklch, var(--nb-brand) 12%, transparent);
+
+		--nb-border: #272727;
+		--nb-border-strong: #313131;
+		--nb-selected: #313131;
+		--nb-code-tint: color-mix(in oklch, var(--nb-foreground) 7%, transparent);
+		--nb-ring: color-mix(in oklch, var(--nb-brand) 50%, transparent);
+
+		--nb-info: oklch(0.707 0.165 254.624);
+		--nb-info-foreground: oklch(0.707 0.165 254.624);
+		--nb-info-muted: oklch(0.38 0.145 265.5 / 0.22);
+
+		--nb-success: oklch(0.905 0.093 164.15);
+		--nb-success-foreground: oklch(0.905 0.093 164.15);
+		--nb-success-muted: oklch(0.393 0.096 152.3 / 0.2);
+
+		--nb-warning: oklch(0.75 0.183 55.934);
+		--nb-warning-foreground: oklch(0.75 0.183 55.934);
+		--nb-warning-muted: oklch(0.353 0.079 65 / 0.37);
+
+		--nb-danger: oklch(0.704 0.191 22.216);
+		--nb-danger-foreground: oklch(0.704 0.191 22.216);
+		--nb-danger-muted: oklch(0.429 0.176 28.7 / 0.17);
+
+		--nb-m-get-line: oklch(0.765 0.177 163.223 / 0.25);
+		--nb-m-put: var(--nb-warning);
+		--nb-m-put-line: oklch(0.645 0.168 50 / 0.25);
+		--nb-m-delete-line: oklch(0.577 0.245 27.325 / 0.25);
+
+		--nb-shadow-sm: 0 1px 2px oklch(0 0 0 / 0.25);
+		--nb-shadow: 0 1px 3px oklch(0 0 0 / 0.35), 0 1px 2px oklch(0 0 0 / 0.2);
+		--nb-shadow-lg: 0 4px 12px oklch(0 0 0 / 0.45), 0 2px 4px oklch(0 0 0 / 0.25);
+	}
+}
+
 [data-mode="dark"] {
 	--nb-background: #000000;
 	--nb-foreground: #fafafa;
@@ -271,28 +326,104 @@ blockquote {
 	}
 }
 
-[data-scroll-locked] {
+/* ---- Modal scroll containment & top-layer transitions ---- */
+dialog:modal {
+	overscroll-behavior: contain;
+}
+dialog::backdrop {
 	overflow: hidden;
+	overscroll-behavior: contain;
+}
+
+dialog.nb-dialog {
+	opacity: 0;
+	transition-property: opacity, transform, display, overlay;
+	transition-duration: 240ms;
+	transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+	transition-behavior: allow-discrete;
+}
+
+dialog.nb-dialog::backdrop {
+	background-color: rgb(0 0 0 / 0);
+	transition-property: background-color, display, overlay;
+	transition-duration: 240ms;
+	transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+	transition-behavior: allow-discrete;
+}
+
+dialog.nb-dialog[open]:where(:not([data-closing])) {
+	opacity: 1;
+
+	@starting-style {
+		opacity: 0;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		transform: translateY(0) scale(1);
+
+		@starting-style {
+			transform: translateY(8px) scale(0.98);
+		}
+	}
+
+	&::backdrop {
+		background-color: rgb(0 0 0 / 0.4);
+
+		@starting-style {
+			background-color: rgb(0 0 0 / 0);
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	dialog.nb-dialog {
+		transform: translateY(8px) scale(0.98);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	dialog.nb-dialog,
+	dialog.nb-dialog::backdrop {
+		transition-duration: 100ms;
+	}
 }
 
 /* ---- Scrollbar ---- */
 * {
 	scrollbar-width: thin;
-	scrollbar-color: color-mix(in oklch, var(--nb-foreground) 20%, transparent) transparent;
+	scrollbar-color: color-mix(in oklch, var(--nb-foreground) 22%, transparent) transparent;
 }
-::-webkit-scrollbar {
-	width: 6px;
-	height: 6px;
+@supports not (scrollbar-color: auto) {
+	* {
+		scrollbar-width: auto;
+	}
+	::-webkit-scrollbar {
+		width: 6px;
+		height: 6px;
+	}
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	::-webkit-scrollbar-thumb {
+		background: color-mix(in oklch, var(--nb-foreground) 22%, transparent);
+		border-radius: 3px;
+	}
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--nb-muted-foreground);
+	}
 }
-::-webkit-scrollbar-track {
-	background: transparent;
+
+/* ---- Accessible form validation ---- */
+:is(:user-invalid, [aria-invalid="true"]) {
+	border-color: var(--nb-danger);
 }
-::-webkit-scrollbar-thumb {
-	background: color-mix(in oklch, var(--nb-foreground) 20%, transparent);
-	border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-	background: var(--nb-muted-foreground);
+
+/* ---- Off-screen rendering deferral (below the fold only) ---- */
+@supports (content-visibility: auto) {
+	.deferred-section {
+		content-visibility: auto;
+		contain-intrinsic-size: auto none auto 480px;
+	}
 }
 
 /* ---- Landing scroll reveal & interactive motion ---- */

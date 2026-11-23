@@ -66,6 +66,8 @@ const links = [
       <button
         type="button"
         data-landing-menu-open
+        command="show-modal"
+        commandfor="landing-mobile-menu"
         aria-label="打开导航菜单"
         aria-expanded="false"
         aria-controls="landing-mobile-menu"
@@ -81,8 +83,9 @@ const links = [
 <dialog
   id="landing-mobile-menu"
   data-landing-menu-dialog
+  closedby="any"
   aria-label="移动端站点导航"
-  class="fixed inset-0 z-50 m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-background/95 p-6 text-foreground backdrop-blur-xl"
+  class="nb-dialog fixed inset-0 z-50 m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-background/95 p-6 text-foreground backdrop-blur-xl"
 >
   <div class="mx-auto flex h-full max-w-md flex-col justify-between">
     <div>
@@ -94,6 +97,8 @@ const links = [
         <button
           type="button"
           data-landing-menu-close
+          command="close"
+          commandfor="landing-mobile-menu"
           autofocus
           aria-label="关闭导航菜单"
           class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
@@ -174,6 +179,7 @@ const links = [
 
 <script>
   import { mount } from "@cloudflare/nimbus-docs/client";
+  import { closeAnimatedDialog } from "@/components/ui/dialog/dialog.client";
 
   mount("[data-landing-menu-open]", (openBtn) => {
     const dialog = document.querySelector<HTMLDialogElement>("[data-landing-menu-dialog]");
@@ -183,31 +189,52 @@ const links = [
     const controller = new AbortController();
     const { signal } = controller;
 
-    function openMenu() {
-      if (dialog!.open) return;
-      dialog!.showModal();
-      openBtn.setAttribute("aria-expanded", "true");
+    // Native Invoker Commands (`commandfor`/`command`) handle opening and closing
+    // declaratively; bind listeners only when progressive fallback is needed.
+    if (!("commandForElement" in HTMLButtonElement.prototype)) {
+      openBtn.addEventListener(
+        "click",
+        () => {
+          if (!dialog.open) dialog.showModal();
+          openBtn.setAttribute("aria-expanded", "true");
+        },
+        { signal },
+      );
+      closeBtn.addEventListener("click", () => void closeAnimatedDialog(dialog), { signal });
     }
 
-    function closeMenu() {
-      if (!dialog!.open) return;
-      dialog!.close();
+    if (!("closedBy" in HTMLDialogElement.prototype)) {
+      let pressedOn: EventTarget | null = null;
+      dialog.addEventListener("pointerdown", (e) => { pressedOn = e.target; }, { signal });
+      dialog.addEventListener(
+        "pointerup",
+        (e) => {
+          if (e.target === dialog && pressedOn === dialog) void closeAnimatedDialog(dialog);
+          pressedOn = null;
+        },
+        { signal },
+      );
     }
 
-    openBtn.addEventListener("click", () => {
-      if (dialog.open) closeMenu();
-      else openMenu();
-    }, { signal });
+    dialog.addEventListener(
+      "toggle",
+      () => {
+        openBtn.setAttribute("aria-expanded", String(dialog.open));
+      },
+      { signal },
+    );
 
-    closeBtn.addEventListener("click", closeMenu, { signal });
-
-    dialog.addEventListener("close", () => {
-      openBtn.setAttribute("aria-expanded", "false");
-      openBtn.focus();
-    }, { signal });
+    dialog.addEventListener(
+      "close",
+      () => {
+        openBtn.setAttribute("aria-expanded", "false");
+        openBtn.focus();
+      },
+      { signal },
+    );
 
     dialog.querySelectorAll("a").forEach((link) => {
-      link.addEventListener("click", closeMenu, { signal });
+      link.addEventListener("click", () => void closeAnimatedDialog(dialog), { signal });
     });
 
     return () => controller.abort();

@@ -182,11 +182,13 @@ const { id = "llms-playground" } = Astro.props;
             name="project"
             type="text"
             required
+            aria-invalid="false"
+            data-error={`${id}-project-error`}
             value="云舟开发者文档"
             class="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
             placeholder="例如：FastHTML"
           />
-          <p data-pg-field-error="project" hidden class="text-xs text-danger-foreground"></p>
+          <p id={`${id}-project-error`} data-pg-field-error="project" hidden class="text-xs text-danger-foreground"></p>
         </div>
 
         <div class="flex flex-col gap-1">
@@ -198,11 +200,13 @@ const { id = "llms-playground" } = Astro.props;
             name="siteUrl"
             type="url"
             required
+            aria-invalid="false"
+            data-error={`${id}-url-error`}
             value="https://docs.example.cn"
             class="rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
             placeholder="https://docs.example.cn"
           />
-          <p data-pg-field-error="siteUrl" hidden class="text-xs text-danger-foreground"></p>
+          <p id={`${id}-url-error`} data-pg-field-error="siteUrl" hidden class="text-xs text-danger-foreground"></p>
         </div>
 
         <div class="flex flex-col gap-1">

@@ -228,15 +228,56 @@ function initPlayground(root: HTMLElement): () => void {
     }, 180);
   }
 
+  function linkFieldError(inputEl: HTMLInputElement | null, shown: boolean) {
+    if (!inputEl) return;
+    const errorId = inputEl.dataset.error;
+    if (!errorId) return;
+    const ids = (inputEl.getAttribute("aria-describedby") ?? "")
+      .split(/\s+/)
+      .filter((item) => item && item !== errorId);
+    if (shown) ids.push(errorId);
+    if (ids.length > 0) inputEl.setAttribute("aria-describedby", ids.join(" "));
+    else inputEl.removeAttribute("aria-describedby");
+  }
+
   function showFieldError(field: string, msg: string | null) {
     const el = root.querySelector<HTMLElement>(`[data-pg-field-error="${field}"]`);
+    const inputEl = form?.querySelector<HTMLInputElement>(`[name="${field}"]`) ?? null;
     if (!el) return;
     if (msg) {
       el.textContent = msg;
       el.hidden = false;
+      inputEl?.setAttribute("aria-invalid", "true");
+      linkFieldError(inputEl, true);
     } else {
       el.textContent = "";
       el.hidden = true;
+      inputEl?.setAttribute("aria-invalid", "false");
+      linkFieldError(inputEl, false);
+    }
+  }
+
+  function validateField(field: "project" | "siteUrl"): { valid: boolean; normalizedBase?: string } {
+    const inputEl = form?.querySelector<HTMLInputElement>(`[name="${field}"]`);
+    const raw = (inputEl?.value ?? "").trim();
+    if (field === "project") {
+      if (!raw) {
+        showFieldError("project", "请填写项目或站点名称，作为规范必填的 H1 标题。");
+        return { valid: false };
+      }
+      showFieldError("project", null);
+      return { valid: true };
+    }
+    try {
+      const parsed = new URL(raw);
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error("protocol");
+      }
+      showFieldError("siteUrl", null);
+      return { valid: true, normalizedBase: parsed.origin };
+    } catch {
+      showFieldError("siteUrl", "请输入有效的网址，例如 https://docs.example.cn。");
+      return { valid: false };
     }
   }
 
@@ -244,35 +285,21 @@ function initPlayground(root: HTMLElement): () => void {
     if (!form || !genOutput || !genHeader) return false;
     const fd = new FormData(form);
     const project = String(fd.get("project") ?? "").trim();
-    const siteUrlRaw = String(fd.get("siteUrl") ?? "").trim();
     const summary = String(fd.get("summary") ?? "").trim();
     const linksRaw = String(fd.get("links") ?? "").trim();
 
-    let valid = true;
-    if (!project) {
-      showFieldError("project", "请填写项目或站点名称，作为规范必填的 H1 标题。");
-      valid = false;
-    } else {
-      showFieldError("project", null);
-    }
+    const projCheck = validateField("project");
+    const urlCheck = validateField("siteUrl");
 
-    let normalizedBase = siteUrlRaw;
-    try {
-      const parsed = new URL(siteUrlRaw);
-      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
-        throw new Error("protocol");
-      }
-      normalizedBase = parsed.origin;
-      showFieldError("siteUrl", null);
-    } catch {
-      showFieldError("siteUrl", "请输入有效的网址，例如 https://docs.example.cn。");
-      valid = false;
-    }
-
-    if (!valid) {
+    if (!projCheck.valid || !urlCheck.valid || !urlCheck.normalizedBase) {
       if (genStatus) genStatus.textContent = "请先修正表单中的必填项。";
+      if (notify) {
+        const firstInvalid = form.querySelector<HTMLInputElement>('[aria-invalid="true"]');
+        firstInvalid?.focus();
+      }
       return false;
     }
+    const normalizedBase = urlCheck.normalizedBase;
 
     const linkLines = linksRaw
       .split("\n")
@@ -332,6 +359,18 @@ function initPlayground(root: HTMLElement): () => void {
     },
     { signal },
   );
+
+  for (const field of ["project", "siteUrl"] as const) {
+    const el = form?.querySelector<HTMLInputElement>(`[name="${field}"]`);
+    el?.addEventListener("blur", () => validateField(field), { signal });
+    el?.addEventListener(
+      "input",
+      () => {
+        if (el.getAttribute("aria-invalid") === "true") validateField(field);
+      },
+      { signal },
+    );
+  }
 
   copyGenBtn?.addEventListener(
     "click",
