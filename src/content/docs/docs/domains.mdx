@@ -1,0 +1,100 @@
+---
+title: "跨行业应用指南"
+description: "除了软件技术文档外，餐饮门店、商业机构、个人站点与高校课程如何利用 /llms.txt 与大语言模型顺畅协作。"
+sidebar:
+  order: 2
+lastUpdated: 2026-08-10
+---
+
+尽管 `llms.txt` 目前在软件文档领域应用最广泛，但它的结构设计同样适合任何需要让 AI 智能体快速理解业务结构、服务清单或公开知识的行业站点。
+
+<Aside type="note" title="核心原则始终一致">
+  无论所属行业是什么，构建 `llms.txt` 时都应坚持：使用简明清晰的语言；为链接附上精炼有效的说明；避免含糊术语；并始终以真实大语言模型做一次问答实测。
+</Aside>
+
+## 餐饮门店示例
+
+一家本地餐厅可以创建如下 `/llms.txt`，让对话助手一眼掌握营业时间与分时段菜单 Markdown 入口：
+
+```markdown
+# 老张炭火烤肉馆
+
+> 老张炭火烤肉馆坐落于朝阳区光华路，专注传统果木慢烤二十余年，提供高性价比手切鲜肉与地道配菜。
+
+每周营业时间：
+
+- 周一至周五：11:00 至 22:00
+- 周六至周日：10:30 至 23:00
+- 法定节假日正常营业，建议提前两小时预约
+
+## 菜单
+
+- [午市套餐菜单](https://example.cn/lunch.html.md): 每日 11:00 至 14:30 供应的商务简餐与单人烤肉套餐
+- [晚市正餐菜单](https://example.cn/dinner.html.md): 每日 17:00 至 23:00 供应的整切招牌肉品与酒水单
+
+## Optional
+
+- [甜品与饮品单](https://example.cn/dessert.md): 门店自制酸梅汤、冰粉与季节限定甜品明细
+```
+
+对应的午市或单页菜单 `.md` 文件只需使用简洁标准的 Markdown 表格即可：
+
+```markdown
+## 按斤称重招牌肉品
+
+| 菜品 | 价格（元） |
+| --- | --- |
+| 慢烤牛胸肉 | 88 |
+| 炭烤猪肋排 | 78 |
+| 手撕梅花肉 | 68 |
+```
+
+## 其他典型应用场景
+
+<CardGrid>
+  <Card title="企业与机构官网" icon="ph:buildings">
+    集中列出公司主营业务线、定价政策说明、服务等级协议（SLA）、合规资质及售后联系渠道的 Markdown 页面，避免客服助手从营销页面中误读信息。
+  </Card>
+  <Card title="个人主页与简历" icon="ph:user-circle">
+    通过 `/llms.txt` 清晰罗列代表作品、技术专长、过往履历与公开发表文章的 `.md` 链接，帮助招聘方智能体准确归纳个人优势。
+  </Card>
+  <Card title="学校与在线课程" icon="ph:graduation-cap">
+    将院系介绍、选课规则、教学大纲、作业提交说明以及学术日历整理在 `/courses/llms.txt` 下，辅助师生实时查询教务政策。
+  </Card>
+  <Card title="独立开发者产品页" icon="ph:sparkle">
+    直接陈述定价方案、命令行安装方式、更新日志与常见问题解答页面，让用户在终端编程工具中即可准确询问产品用法。
+  </Card>
+</CardGrid>
+
+## 使用脚本实测你的 `llms.txt`
+
+判断一份 `llms.txt` 是否真正有效，最好的办法是让大语言模型仅根据这份文件回答关于你网站的问题。官方仓库提供了基于 [`uv`](https://docs.astral.sh/uv/) 的最小化 Python 测试脚本示例：
+
+```python
+# /// script
+# requires-python = ">=3.8"
+# dependencies = [
+#     "claudette",
+#     "llms-txt",
+#     "requests",
+# ]
+# ///
+from claudette import *
+from llms_txt import create_ctx
+import requests
+
+model = models[1]
+chat = Chat(model, sp="""你是一位乐于助人且回答简洁的智能助手。""")
+
+url = "https://your-site.example/llms.txt"
+text = requests.get(url).text
+llm_ctx = create_ctx(text)
+chat(llm_ctx + "\n\n以上内容是本次对话所需的基础背景上下文。")
+
+while True:
+    msg = input("请输入关于该网站的问题：")
+    res = chat(msg)
+    print("模型回复：", contents(res))
+```
+
+在 v2 工作流中，你也可以直接将 `/llms.txt` 的地址交给支持联网工具调用的编程智能体（例如 Claude Code、Cursor 等），让智能体自行阅读索引并按需追踪其中的 `.md` 链接来作答，以此检验链接说明是否足够清晰。

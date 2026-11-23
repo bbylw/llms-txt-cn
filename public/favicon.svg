@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <style>
+    rect { fill: #ffffff; stroke: #e5e5e5; }
+    path { fill: #171717; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #000000; stroke: #272727; }
+      path { fill: #fafafa; }
+    }
+  </style>
+  <rect x="1" y="1" width="30" height="30" rx="7" stroke-width="1.5" />
+  <g transform="translate(0 4)">
+    <path d="M9.2 3L4.2 21H7.1L12.1 3H9.2Z" />
+    <path d="M14.5 6.5H27.5V9H14.5V6.5Z" />
+    <path d="M13.5 11.25H24.5V13.75H13.5V11.25Z" />
+    <path d="M12.5 16H27.5V18.5H12.5V16Z" />
+  </g>
+</svg>

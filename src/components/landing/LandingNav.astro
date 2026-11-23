@@ -1,0 +1,202 @@
+---
+import Logo from "@/components/Logo.astro";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { config } from "virtual:nimbus/config";
+import { stripBase, withBase } from "@cloudflare/nimbus-docs/runtime";
+
+const currentSlug =
+  stripBase(Astro.url.pathname, import.meta.env.BASE_URL).replace(/\/$/, "") || "/";
+const homeHref = withBase("/", import.meta.env.BASE_URL);
+const docsHref = withBase("/docs/", import.meta.env.BASE_URL);
+
+const links = [
+  { label: "首页", href: homeHref, active: currentSlug === "/" },
+  { label: "规范文档", href: docsHref, active: currentSlug.startsWith("/docs") && !currentSlug.startsWith("/docs/changes") && !currentSlug.startsWith("/docs/parser") },
+  { label: "v2 变更", href: withBase("/docs/changes/", import.meta.env.BASE_URL), active: currentSlug.startsWith("/docs/changes") },
+  { label: "解析器", href: withBase("/docs/parser/", import.meta.env.BASE_URL), active: currentSlug.startsWith("/docs/parser") },
+];
+---
+
+<header class="sticky top-4 z-40 mx-auto w-full px-4 pointer-events-none">
+  <div class="pointer-events-auto mx-auto flex w-fit max-w-full items-center gap-2 rounded-2xl border border-border bg-card/80 px-3 py-2 shadow-sm backdrop-blur-md">
+    <a
+      href={homeHref}
+      aria-label={config.title}
+      class="flex shrink-0 items-center gap-2 rounded-lg px-2 py-1 text-foreground no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent"
+    >
+      <Logo class="h-4 w-6 shrink-0" />
+      <span class="font-mono text-sm font-semibold tracking-tight">llms.txt</span>
+    </a>
+
+    <nav aria-label="主导航" class="hidden md:flex items-center gap-1 border-s border-border ps-2">
+      {links.map((item) => (
+        <a
+          href={item.href}
+          aria-current={item.active ? "page" : undefined}
+          class:list={[
+            "rounded-lg px-3 py-1 text-sm font-medium no-underline whitespace-nowrap transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            item.active
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+          ]}
+        >
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="flex items-center gap-1 border-s border-border ps-2">
+      <ThemeToggle />
+
+      <a
+        href={docsHref}
+        class="hidden sm:inline-flex items-center rounded-lg bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground no-underline whitespace-nowrap transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-hover active:scale-[0.98]"
+      >
+        阅读规范
+      </a>
+
+      <button
+        type="button"
+        data-landing-menu-open
+        aria-label="打开导航菜单"
+        aria-expanded="false"
+        aria-controls="landing-mobile-menu"
+        class="md:hidden relative flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+      >
+        <span data-line-top class="absolute h-0.5 w-4 rounded-full bg-current transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] -translate-y-1"></span>
+        <span data-line-bottom class="absolute h-0.5 w-4 rounded-full bg-current transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] translate-y-1"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog
+  id="landing-mobile-menu"
+  data-landing-menu-dialog
+  aria-label="移动端站点导航"
+  class="fixed inset-0 z-50 m-0 h-dvh w-screen max-h-none max-w-none border-0 bg-background/95 p-6 text-foreground backdrop-blur-xl"
+>
+  <div class="mx-auto flex h-full max-w-md flex-col justify-between">
+    <div>
+      <div class="flex items-center justify-between border-b border-border pb-4">
+        <a href={homeHref} class="flex items-center gap-2 text-foreground no-underline">
+          <Logo class="h-5 w-7" />
+          <span class="font-mono text-base font-semibold">llms.txt</span>
+        </a>
+        <button
+          type="button"
+          data-landing-menu-close
+          autofocus
+          aria-label="关闭导航菜单"
+          class="relative flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+        >
+          <span class="absolute h-0.5 w-4 rotate-45 rounded-full bg-current"></span>
+          <span class="absolute h-0.5 w-4 -rotate-45 rounded-full bg-current"></span>
+        </button>
+      </div>
+
+      <nav aria-label="移动端菜单链接" class="mt-8 flex flex-col gap-3">
+        {links.map((item, idx) => (
+          <a
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            data-landing-menu-item
+            style={`--menu-delay: ${Math.min(idx * 60, 360)}ms`}
+            class:list={[
+              "landing-menu-link rounded-xl border px-4 py-3 text-lg font-semibold no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+              item.active
+                ? "border-border-strong bg-accent text-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
+        <a
+          href={withBase("/llms.txt", import.meta.env.BASE_URL)}
+          data-landing-menu-item
+          style={`--menu-delay: ${Math.min(links.length * 60, 360)}ms`}
+          class="landing-menu-link rounded-xl border border-border bg-card px-4 py-3 font-mono text-base font-medium text-muted-foreground no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-foreground"
+        >
+          /llms.txt 原文索引
+        </a>
+      </nav>
+    </div>
+
+    <div class="border-t border-border pt-4 text-xs text-muted-foreground">
+      基于 Answer.AI /llms.txt v2 规范（2026 年 8 月修订）构建
+    </div>
+  </div>
+</dialog>
+
+<style>
+  dialog[data-landing-menu-dialog]:not([open]) {
+    display: none;
+  }
+
+  [data-landing-menu-open][aria-expanded="true"] [data-line-top] {
+    transform: translateY(0) rotate(45deg);
+  }
+  [data-landing-menu-open][aria-expanded="true"] [data-line-bottom] {
+    transform: translateY(0) rotate(-45deg);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    dialog[data-landing-menu-dialog][open] .landing-menu-link {
+      animation: landing-menu-enter 400ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: var(--menu-delay, 0ms);
+    }
+    @keyframes landing-menu-enter {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
+</style>
+
+<script>
+  import { mount } from "@cloudflare/nimbus-docs/client";
+
+  mount("[data-landing-menu-open]", (openBtn) => {
+    const dialog = document.querySelector<HTMLDialogElement>("[data-landing-menu-dialog]");
+    const closeBtn = dialog?.querySelector<HTMLButtonElement>("[data-landing-menu-close]");
+    if (!dialog || !closeBtn) return () => {};
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    function openMenu() {
+      if (dialog!.open) return;
+      dialog!.showModal();
+      openBtn.setAttribute("aria-expanded", "true");
+    }
+
+    function closeMenu() {
+      if (!dialog!.open) return;
+      dialog!.close();
+    }
+
+    openBtn.addEventListener("click", () => {
+      if (dialog.open) closeMenu();
+      else openMenu();
+    }, { signal });
+
+    closeBtn.addEventListener("click", closeMenu, { signal });
+
+    dialog.addEventListener("close", () => {
+      openBtn.setAttribute("aria-expanded", "false");
+      openBtn.focus();
+    }, { signal });
+
+    dialog.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", closeMenu, { signal });
+    });
+
+    return () => controller.abort();
+  });
+</script>

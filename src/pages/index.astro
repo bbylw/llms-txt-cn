@@ -1,0 +1,558 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import LandingNav from "@/components/landing/LandingNav.astro";
+import TaglineReveal from "@/components/landing/TaglineReveal.astro";
+import LlmsPlayground from "@/components/landing/LlmsPlayground.astro";
+import FaqSection, { faqs } from "@/components/landing/FaqSection.astro";
+import LandingFooter from "@/components/landing/LandingFooter.astro";
+import Icon from "@cloudflare/nimbus-docs/components/Icon.astro";
+import { withBase } from "@cloudflare/nimbus-docs/runtime";
+import { config } from "virtual:nimbus/config";
+
+const docsHref = withBase("/docs/", import.meta.env.BASE_URL);
+const llmsTxtHref = withBase("/llms.txt", import.meta.env.BASE_URL);
+const canonical = new URL("/", config.site).href;
+
+const faqJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      name: config.title,
+      url: canonical,
+      description: config.description,
+      inLanguage: "zh-CN",
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: faqs.map((item) => ({
+        "@type": "Question",
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+        },
+      })),
+    },
+  ],
+}).replace(/</g, "\\u003c");
+
+const heroSampleLlms = `# FastHTML
+
+> FastHTML 是一个结合 Starlette、Uvicorn 与 HTMX 的 Python 超媒体框架。
+
+重要说明：
+
+- API 风格虽受 FastAPI 启发，但并不兼容 FastAPI 语法
+- 兼容原生 Web Components，不面向 React 或 Vue
+
+## Docs
+
+- [快速开始](https://fastht.ml/docs/tutorials/quickstart_for_web_devs.html.md): 核心特性速览
+- [HTMX 参考](https://github.com/bigskysoftware/htmx/blob/master/www/content/reference.md): 属性与事件完整清单`;
+
+const heroSampleLinkHeader = `Link: </docs/page.html.md>; rel="alternate"; type="text/markdown",
+      </docs/llms.txt>; rel="describedby"`;
+
+const adopters = [
+  "OpenAI",
+  "Anthropic",
+  "Google Gemini",
+  "Chrome Lighthouse",
+  "Mintlify",
+  "GitBook",
+  "FastHTML",
+  "Cloudflare Nimbus",
+];
+
+const benefits = [
+  {
+    icon: "ph:lightning",
+    title: "减少无效上下文开销",
+    detail: "将整站结构浓缩进一份轻量 Markdown 目录，编程智能体先读索引再按需抓取具体页面，省下大量冗余 Token 与等待延迟。",
+  },
+  {
+    icon: "ph:link",
+    title: "零猜测标准发现",
+    detail: "通过 rel=\"alternate\" type=\"text/markdown\" 与 rel=\"describedby\" 声明页面与索引关联，直接配置 HTTP Link 响应头即可全站生效。",
+  },
+  {
+    icon: "ph:folders",
+    title: "任意子路径独立部署",
+    detail: "不依赖源站根目录权限，无论是整站根目录还是 GitHub Pages 等子目录文档，均可发布专属 llms.txt 并遵循最具体路径优先原则。",
+  },
+  {
+    icon: "ph:code",
+    title: "人类与程序双重可读",
+    detail: "采用直观清晰的 Markdown 五段式顺序，产品人员可以直接审阅，传统正则或几十行 JavaScript 解析器亦可稳定提取结构。",
+  },
+];
+
+const steps = [
+  {
+    num: "01",
+    title: "编写 /llms.txt 目录",
+    desc: "在站点根路径或文档子路径放置 llms.txt，按序包含 H1 项目标题、引用块摘要、补充说明以及带简短描述的 H2 链接分组。",
+    code: `# 项目名称\n> 一句话说明项目定位与受众\n## Docs\n- [快速开始](/docs/start.html.md): 安装与首个示例`,
+  },
+  {
+    num: "02",
+    title: "提供页面 .md 版本",
+    desc: "为需要被智能体读取的页面提供同路径 Markdown 副本，支持在原 URL 后追加 .md（page.html.md）或替换扩展名（page.md）。",
+    code: `/docs/guide.html      -> /docs/guide.html.md\n/docs/guide.html      -> /docs/guide.md\n/docs/                -> /docs/index.md`,
+  },
+  {
+    num: "03",
+    title: "声明 Link 关系并实测",
+    desc: "在 HTML head 或 CDN 响应头添加 alternate 与 describedby 链接关系，并使用 Chrome Lighthouse 或在线解析器完成验收。",
+    code: `Link: </docs/guide.html.md>; rel="alternate"; type="text/markdown",\n      </docs/llms.txt>; rel="describedby"`,
+  },
+];
+
+const labs = [
+  {
+    name: "OpenAI 开发者文档",
+    url: "https://developers.openai.com/llms.txt",
+    tag: "AI 实验室官方实践",
+    desc: "面向编程助手与 API 集成工具提供统一的 OpenAI 开发者接口索引。",
+  },
+  {
+    name: "Anthropic 文档站",
+    url: "https://docs.anthropic.com/llms.txt",
+    tag: "AI 实验室官方实践",
+    desc: "为 Claude 开发者文档提供精炼结构化目录与按需 Markdown 页面入口。",
+  },
+  {
+    name: "Google Gemini API 文档",
+    url: "https://ai.google.dev/gemini-api/docs/llms.txt",
+    tag: "AI 实验室官方实践",
+    desc: "在子路径 /gemini-api/docs/ 下独立发布作用域明确的 llms.txt 索引。",
+  },
+  {
+    name: "Chrome Lighthouse 审计",
+    url: "https://developer.chrome.com/docs/lighthouse/agentic-browsing/llms-txt",
+    tag: "浏览器生态标准",
+    desc: "已被纳入 Chrome Lighthouse 智能体浏览（Agentic Browsing）自动化检测项目。",
+  },
+];
+
+const ecosystemTools = [
+  { name: "Mintlify", role: "文档平台", desc: "为托管的每座文档站自动生成 llms.txt 与全套页面 Markdown 版本。", href: "https://www.mintlify.com/docs/ai/llmstxt" },
+  { name: "GitBook", role: "知识库平台", desc: "为已发布文档站原生提供标准的 llms.txt 文件。", href: "https://www.gitbook.com/blog/what-is-llms-txt" },
+  { name: "Cloudflare Nimbus", role: "Astro 文档框架", desc: "本站所用技术栈，构建时原生生成多级 llms.txt、llms-full.txt 与 index.md。", href: "https://nimbus-docs.com/" },
+  { name: "vitepress-plugin-llms", role: "VitePress 插件", desc: "自动为 VitePress 文档输出符合 llms.txt 规范的索引与 Markdown 文件。", href: "https://github.com/okineadev/vitepress-plugin-llms" },
+  { name: "docusaurus-plugin-llms", role: "Docusaurus 插件", desc: "在 Docusaurus 站点构建阶段生成 LLM 友好文档结构。", href: "https://github.com/rachfop/docusaurus-plugin-llms" },
+  { name: "server-llm-txt", role: "MCP 服务器", desc: "让支持 Model Context Protocol 的智能体直接抓取并检索站点的 llms.txt。", href: "https://github.com/mcp-get/community-servers/tree/main/src/server-llm-txt" },
+];
+---
+
+<BaseLayout
+  title="v2 规范文档与实践指南"
+  description={config.description}
+  markdownUrl="/index.md"
+  head={[{ tag: "script", attrs: { type: "application/ld+json" }, content: faqJsonLd }]}
+>
+  <div class="flex min-h-screen flex-col bg-background text-foreground">
+    <LandingNav />
+
+    <main id="main-content" tabindex="-1" class="flex-1">
+      {/* 1. Hero (Above the fold) */}
+      <section class="mx-auto max-w-6xl px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-20">
+        <div class="mx-auto flex max-w-[680px] flex-col items-center text-center">
+          <span class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-xs font-medium text-muted-foreground">
+            <Icon name="ph:sparkle" class="h-3.5 w-3.5 text-brand" />
+            <span>v2 规范 · 2026 年 8 月修订</span>
+          </span>
+
+          <h1 class="hero-title-gradient mt-6 text-balance text-4xl leading-tight font-semibold tracking-tight sm:text-5xl md:text-6xl">
+            为 AI 智能体打造的
+            <br />
+            站点 Markdown 导航规范
+          </h1>
+
+          <p class="mt-6 max-w-[680px] text-pretty text-base leading-7 text-muted-foreground sm:text-lg">
+            在网站根目录或子路径添加一个 <code class="rounded bg-muted px-1 py-0.5 font-mono text-sm text-foreground">/llms.txt</code> 文件，配合页面 <code class="rounded bg-muted px-1 py-0.5 font-mono text-sm text-foreground">.md</code> 版本与标准 <code class="rounded bg-muted px-1 py-0.5 font-mono text-sm text-foreground">Link</code> 发现关系，让编程智能体与搜索助手直接读取结构化核心内容。
+          </p>
+
+          <div class="mt-8 flex flex-col items-center gap-4">
+            <a
+              href={docsHref}
+              class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-base font-semibold text-primary-foreground no-underline transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-hover active:scale-[0.98]"
+            >
+              <span>阅读 v2 完整规范</span>
+              <Icon name="ph:arrow-right" class="h-4 w-4" />
+            </a>
+
+            <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pt-2 text-xs text-muted-foreground">
+              <span class="font-medium text-foreground">已被行业广泛采用：</span>
+              {adopters.map((brand) => (
+                <span class="font-mono">{brand}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Hero Visual: HTML Noise vs Clean /llms.txt */}
+        <div class="mt-12 rounded-2xl border border-border bg-card p-2 shadow-sm">
+          <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
+            <div class="rounded-lg border border-border bg-muted p-4 sm:p-6">
+              <div class="mb-3 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <Icon name="ph:warning-circle" class="h-4 w-4 text-warning-foreground" />
+                  <span class="text-sm font-semibold text-foreground">传统 HTML 网页（为人而建）</span>
+                </div>
+                <span class="rounded border border-border bg-card px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                  解析噪音大
+                </span>
+              </div>
+              <pre class="m-0 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-muted-foreground"><code>{`<nav class="mega-menu">...42 个导航链接...</nav>
+<aside class="ad-banner">...促销弹窗脚本...</aside>
+<script src="/analytics-bundle.js"></script>
+<main class="prose-wrapper">
+  <div class="card-shadow">...核心 API 说明...</div>
+</main>`}</code></pre>
+            </div>
+
+            <div class="rounded-lg border border-border bg-muted p-4 sm:p-6">
+              <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <Icon name="ph:check-circle" class="h-4 w-4 text-success-foreground" />
+                  <span class="font-mono text-sm font-semibold text-foreground">/llms.txt + Link 发现头（v2）</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button
+                    type="button"
+                    data-hero-copy
+                    class="inline-flex cursor-pointer items-center gap-1 rounded border border-border bg-card px-2 py-0.5 text-xs font-medium text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-foreground active:scale-[0.98]"
+                  >
+                    <Icon name="ph:copy" class="h-3.5 w-3.5" />
+                    <span data-hero-copy-label aria-live="polite">复制示例</span>
+                  </button>
+                  <a
+                    href={llmsTxtHref}
+                    class="inline-flex items-center gap-1 rounded border border-border bg-card px-2 py-0.5 font-mono text-xs font-medium text-foreground no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent"
+                  >
+                    <span>查看本站 /llms.txt</span>
+                    <Icon name="ph:arrow-up-right" class="h-3 w-3" />
+                  </a>
+                </div>
+              </div>
+              <pre data-hero-code class="m-0 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-foreground"><code>{heroSampleLlms}</code></pre>
+              <div class="mt-2 rounded-lg border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground overflow-x-auto">
+                <span class="font-semibold text-foreground">HTTP 发现头：</span>
+                <span>{heroSampleLinkHeader}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. Problem -> Solution */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-8 max-w-[680px]">
+          <p class="font-mono text-xs font-medium text-muted-foreground">WHY LLMS.TXT</p>
+          <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            为什么站点需要专门的智能体入口
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <article class="rounded-2xl border border-border bg-card p-6">
+            <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Icon name="ph:browsers" class="h-5 w-5 text-muted-foreground" />
+              <span>传统网页抓取的三重瓶颈</span>
+            </div>
+            <ul class="space-y-3 text-sm leading-6 text-muted-foreground">
+              <li class="flex items-start gap-2">
+                <Icon name="ph:x-circle" class="mt-1 h-4 w-4 shrink-0 text-danger-foreground" />
+                <span>HTML 页面包裹了大量导航栏、广告与前端脚本，反向提取正文既繁琐又容易丢失关键代码格式。</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <Icon name="ph:x-circle" class="mt-1 h-4 w-4 shrink-0 text-danger-foreground" />
+                <span>尽管上下文窗口不断扩大，仍远不足以装下整座文档站，每浪费一个 Token 都在增加时间与调用成本。</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <Icon name="ph:x-circle" class="mt-1 h-4 w-4 shrink-0 text-danger-foreground" />
+                <span>没有清晰导航索引时，智能体只能盲目试探 URL 或依赖不完整的搜索摘要，极易遗漏关键版本差异。</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="rounded-2xl border border-border bg-card p-6">
+            <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Icon name="ph:file-md" class="h-5 w-5 text-brand" />
+              <span>/llms.txt v2 的精准解法</span>
+            </div>
+            <ul class="space-y-3 text-sm leading-6 text-muted-foreground">
+              <li class="flex items-start gap-2">
+                <Icon name="ph:check-circle" class="mt-1 h-4 w-4 shrink-0 text-success-foreground" />
+                <span>在单一约定位置提供精炼专家级目录，智能体先读索引再按需追踪相关链接，体积轻松适配上下文窗口。</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <Icon name="ph:check-circle" class="mt-1 h-4 w-4 shrink-0 text-success-foreground" />
+                <span>同 URL 提供干净的 <code class="font-mono text-xs text-foreground">.md</code> 页面副本（支持追加或替换扩展名），彻底消除排版噪音。</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <Icon name="ph:check-circle" class="mt-1 h-4 w-4 shrink-0 text-success-foreground" />
+                <span>借助标准 <code class="font-mono text-xs text-foreground">rel="alternate"</code> 与 <code class="font-mono text-xs text-foreground">rel="describedby"</code>，从任意页面即可直达对应索引与源码。</span>
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      {/* 3. Benefits */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-8 max-w-[680px]">
+          <p class="font-mono text-xs font-medium text-muted-foreground">CORE BENEFITS</p>
+          <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            一份纯文本文件带来的四项实际收益
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {benefits.map((item) => (
+            <article class="rounded-2xl border border-border bg-card p-6 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-border-strong">
+              <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
+                <Icon name={item.icon} class="h-5 w-5" />
+              </div>
+              <h3 class="text-lg font-semibold text-foreground">{item.title}</h3>
+              <p class="mt-2 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Mandatory Tagline Reveal Section (B11) */}
+      <TaglineReveal />
+
+      {/* 5. How it works (3 Steps) */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-8 max-w-[680px]">
+          <p class="font-mono text-xs font-medium text-muted-foreground">HOW IT WORKS</p>
+          <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            三步为站点接入 /llms.txt v2
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          {steps.map((step) => (
+            <article class="flex flex-col justify-between rounded-2xl border border-border bg-card p-6">
+              <div>
+                <span class="font-mono text-xs font-semibold text-brand">STEP {step.num}</span>
+                <h3 class="mt-2 text-lg font-semibold text-foreground">{step.title}</h3>
+                <p class="mt-2 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">{step.desc}</p>
+              </div>
+              <pre class="mt-4 mb-0 overflow-x-auto rounded-lg border border-border bg-muted p-3 font-mono text-xs leading-5 text-foreground"><code>{step.code}</code></pre>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. Interactive Parser & Generator Playground */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-8 max-w-[680px]">
+          <p class="font-mono text-xs font-medium text-muted-foreground">INTERACTIVE PLAYGROUND</p>
+          <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            在线解析校验与模板生成器
+          </h2>
+          <p class="mt-2 text-pretty text-base leading-7 text-muted-foreground">
+            直接验证你的 <code class="font-mono text-sm text-foreground">llms.txt</code> 结构是否符合五段式规范，或根据站点信息一键生成标准模板与 HTTP 响应头。
+          </p>
+        </div>
+        <LlmsPlayground id="home-playground" />
+      </section>
+
+      {/* 7. Social Proof & Ecosystem */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-8 max-w-[680px]">
+          <p class="font-mono text-xs font-medium text-muted-foreground">ECOSYSTEM & ADOPTION</p>
+          <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+            AI 实验室、审计工具与文档生态正在共同采纳
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {labs.map((lab) => (
+            <a
+              href={lab.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="group flex flex-col justify-between rounded-2xl border border-border bg-card p-6 no-underline transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-border-strong active:scale-[0.98]"
+            >
+              <div>
+                <span class="inline-block rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
+                  {lab.tag}
+                </span>
+                <h3 class="mt-3 text-base font-semibold text-foreground">{lab.name}</h3>
+                <p class="mt-2 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">{lab.desc}</p>
+              </div>
+              <span class="mt-4 inline-flex items-center gap-1 font-mono text-xs font-medium text-brand">
+                <span>访问真实文件</span>
+                <Icon name="ph:arrow-up-right" class="h-3.5 w-3.5" />
+              </span>
+            </a>
+          ))}
+        </div>
+
+        <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {ecosystemTools.map((tool) => (
+            <a
+              href={tool.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="flex flex-col justify-between rounded-xl border border-border bg-card p-4 no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-border-strong hover:bg-muted active:scale-[0.98]"
+            >
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <span class="font-mono text-sm font-semibold text-foreground">{tool.name}</span>
+                  <span class="text-xs text-muted-foreground">{tool.role}</span>
+                </div>
+                <p class="mt-2 text-xs leading-5 text-muted-foreground [text-wrap:pretty]">{tool.desc}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* 8. FAQ Section */}
+      <div class="nb-reveal">
+        <FaqSection />
+      </div>
+
+      {/* 9. Risk Reversal & Final CTA */}
+      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
+        <div class="rounded-2xl border border-border bg-card p-6 sm:p-12">
+          <div class="mx-auto max-w-[680px] text-center">
+            <h2 class="text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+              开放标准，零依赖渐进式接入
+            </h2>
+            <p class="mt-4 text-pretty text-base leading-7 text-muted-foreground">
+              无需重构现有前端页面，也无需绑定任何商业平台。只需发布一份纯文本 Markdown 文件，即可让全球编程智能体准确理解你的网站。
+            </p>
+
+            <div class="mt-6 grid grid-cols-1 gap-3 text-left sm:grid-cols-2">
+              <div class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
+                <Icon name="ph:check-circle" class="h-4 w-4 shrink-0 text-success-foreground" />
+                <span>永久免费开放规范，社区共建</span>
+              </div>
+              <div class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
+                <Icon name="ph:check-circle" class="h-4 w-4 shrink-0 text-success-foreground" />
+                <span>纯静态文本文件，兼容任意托管</span>
+              </div>
+              <div class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
+                <Icon name="ph:check-circle" class="h-4 w-4 shrink-0 text-success-foreground" />
+                <span>支持通过 CDN Link 响应头无痛部署</span>
+              </div>
+              <div class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground">
+                <Icon name="ph:check-circle" class="h-4 w-4 shrink-0 text-success-foreground" />
+                <span>与 robots.txt、sitemap.xml 完全兼容</span>
+              </div>
+            </div>
+
+            <div class="mt-8 flex flex-col items-center gap-4">
+              <a
+                href={docsHref}
+                class="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-base font-semibold text-primary-foreground no-underline transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-hover active:scale-[0.98]"
+              >
+                <span>阅读 v2 完整规范</span>
+                <Icon name="ph:arrow-right" class="h-4 w-4" />
+              </a>
+
+              <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground">
+                <a href={llmsTxtHref} class="font-mono no-underline hover:text-foreground transition-colors">
+                  查看本站 /llms.txt
+                </a>
+                <span aria-hidden="true">·</span>
+                <a
+                  href="https://github.com/AnswerDotAI/llms-txt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="no-underline hover:text-foreground transition-colors"
+                >
+                  访问 GitHub 原仓库
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <LandingFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  /* Hero heading text gradient — light and dark */
+  .hero-title-gradient {
+    background-image: linear-gradient(90deg, #000000 0%, #666666 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  :global([data-mode="dark"]) .hero-title-gradient {
+    background-image: linear-gradient(90deg, #ffffff 0%, #9b9b9b 100%);
+  }
+</style>
+
+<script>
+  import { mount } from "@cloudflare/nimbus-docs/client";
+
+  // Hero code copy button
+  mount("[data-hero-copy]", (btn) => {
+    const label = btn.querySelector<HTMLElement>("[data-hero-copy-label]");
+    const code = document.querySelector<HTMLElement>("[data-hero-code]");
+    if (!label || !code) return () => {};
+
+    let timer: number | undefined;
+    const onClick = async () => {
+      try {
+        await navigator.clipboard.writeText(code.textContent ?? "");
+        label.textContent = "已复制";
+      } catch {
+        label.textContent = "复制受限";
+      }
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        label.textContent = "复制示例";
+      }, 1500);
+    };
+    btn.addEventListener("click", onClick);
+    return () => {
+      btn.removeEventListener("click", onClick);
+      if (timer) window.clearTimeout(timer);
+    };
+  });
+
+  // Single IntersectionObserver for one-time section reveals
+  mount("#main-content", (main) => {
+    const targets = Array.from(main.querySelectorAll<HTMLElement>(".nb-reveal"));
+    if (targets.length === 0) return () => {};
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.removeAttribute("data-reveal-state");
+            observer.unobserve(entry.target);
+          }
+        }
+      },
+      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
+    );
+
+    targets.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.92) {
+        el.removeAttribute("data-reveal-state");
+      } else {
+        el.setAttribute("data-reveal-state", "pending");
+        observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  });
+</script>

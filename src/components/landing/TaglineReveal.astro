@@ -1,0 +1,105 @@
+---
+const lines = [
+  ["网页", "为人类双眼", "而排布，"],
+  ["信息", "应为智能体", "而澄明。"],
+  ["一份目录，", "连接", "整座知识库。"],
+];
+---
+
+<section
+  data-tagline-reveal
+  aria-label="核心理念宣言"
+  class="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-24"
+>
+  <div class="mx-auto max-w-[680px]">
+    <p class="text-balance text-4xl leading-tight font-semibold tracking-tight sm:text-5xl">
+      {lines.map((phrases, lineIndex) => (
+        <>
+          {phrases.map((phrase) => (
+            <span
+              data-reveal-word
+              class="tagline-word inline-block text-foreground opacity-[0.28]"
+            >
+              {phrase}
+            </span>
+          ))}
+          {lineIndex < lines.length - 1 && <br />}
+        </>
+      ))}
+    </p>
+  </div>
+</section>
+
+<style>
+  .tagline-word {
+    transition: opacity 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .tagline-word[data-active="true"] {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tagline-word {
+      opacity: 1;
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { mount } from "@cloudflare/nimbus-docs/client";
+
+  mount("[data-tagline-reveal]", (section) => {
+    const words = Array.from(section.querySelectorAll<HTMLElement>("[data-reveal-word]"));
+    if (words.length === 0) return () => {};
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      words.forEach((w) => w.setAttribute("data-active", "true"));
+      return () => {};
+    }
+
+    let rafId = 0;
+    let isVisible = false;
+
+    function updateWords() {
+      rafId = 0;
+      const rect = section.getBoundingClientRect();
+      const vh = window.innerHeight || 800;
+      // Trigger progress as section enters from bottom 82% to top 32%
+      const start = vh * 0.85;
+      const end = vh * 0.28;
+      const raw = (start - rect.top) / Math.max(1, start - end);
+      const progress = Math.max(0, Math.min(1, raw));
+      const activeCount = Math.round(progress * words.length);
+
+      words.forEach((word, index) => {
+        if (index < activeCount) word.setAttribute("data-active", "true");
+        else word.removeAttribute("data-active");
+      });
+    }
+
+    function scheduleUpdate() {
+      if (!isVisible || rafId) return;
+      rafId = window.requestAnimationFrame(updateWords);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        isVisible = entries.some((e) => e.isIntersecting);
+        if (isVisible) scheduleUpdate();
+      },
+      { threshold: 0, rootMargin: "80px 0px" },
+    );
+
+    observer.observe(section);
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate, { passive: true });
+    updateWords();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  });
+</script>

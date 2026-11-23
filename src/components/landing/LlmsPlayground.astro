@@ -1,0 +1,272 @@
+---
+import Icon from "@cloudflare/nimbus-docs/components/Icon.astro";
+
+interface Props {
+  id?: string;
+}
+
+const { id = "llms-playground" } = Astro.props;
+---
+
+<div
+  id={id}
+  data-llms-playground
+  class="not-prose rounded-2xl border border-border bg-card p-2 shadow-sm"
+>
+  <div class="rounded-lg border border-border bg-background p-4 sm:p-6">
+    {/* Top mode switcher & preset bar */}
+    <div class="flex flex-col gap-4 border-b border-border pb-4 sm:flex-row sm:items-center sm:justify-between">
+      <div
+        role="tablist"
+        aria-label="演练场模式"
+        class="inline-flex w-fit rounded-xl border border-border bg-muted p-1"
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected="true"
+          data-pg-tab="parse"
+          class="cursor-pointer rounded-lg bg-card px-3 py-2 text-sm font-semibold text-foreground shadow-sm transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-[0.98]"
+        >
+          在线解析校验
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected="false"
+          data-pg-tab="generate"
+          class="cursor-pointer rounded-lg px-3 py-2 text-sm font-semibold text-muted-foreground transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-foreground active:scale-[0.98]"
+        >
+          快速生成模板
+        </button>
+      </div>
+
+      <div data-pg-presets class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          data-pg-preset="fasthtml"
+          class="cursor-pointer rounded-lg border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+        >
+          FastHTML 官方示例
+        </button>
+        <button
+          type="button"
+          data-pg-preset="zh"
+          class="cursor-pointer rounded-lg border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+        >
+          中文文档示例
+        </button>
+        <button
+          type="button"
+          data-pg-preset="subpath"
+          class="cursor-pointer rounded-lg border border-border bg-card px-3 py-1 text-xs font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+        >
+          子路径示例
+        </button>
+        <button
+          type="button"
+          data-pg-preset="empty"
+          class="cursor-pointer rounded-lg border border-border bg-muted px-3 py-1 text-xs font-medium text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:text-foreground hover:bg-accent active:scale-[0.98]"
+        >
+          清空
+        </button>
+      </div>
+    </div>
+
+    {/* Panel 1: Parse & Validate */}
+    <div data-pg-panel="parse" class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <label for={`${id}-input`} class="text-sm font-semibold text-foreground">
+            输入 llms.txt 原文
+          </label>
+          <span data-pg-line-count class="font-mono text-xs text-muted-foreground">0 行</span>
+        </div>
+        <textarea
+          id={`${id}-input`}
+          data-pg-input
+          rows={15}
+          spellcheck="false"
+          class="w-full resize-y rounded-lg border border-border bg-muted p-4 font-mono text-sm leading-6 text-foreground placeholder:text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] focus:border-border-strong focus:outline-none"
+          placeholder="在此输入符合 llms.txt v2 规范的 Markdown 内容..."
+        ></textarea>
+
+        {/* Inline error feedback */}
+        <div
+          data-pg-error
+          role="alert"
+          hidden
+          class="flex items-start gap-2 rounded-lg border border-danger/30 bg-danger-muted p-3 text-sm text-danger-foreground"
+        >
+          <Icon name="ph:warning-circle" class="mt-0.5 h-4 w-4 shrink-0" />
+          <span data-pg-error-text></span>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm font-semibold text-foreground">规范检查与 JSON 解析结果</span>
+          <button
+            type="button"
+            data-pg-copy-json
+            class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-card px-2 py-1 text-xs font-medium text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent hover:text-foreground active:scale-[0.98]"
+          >
+            <Icon name="ph:copy" class="h-3.5 w-3.5" />
+            <span data-pg-copy-json-label aria-live="polite">复制 JSON</span>
+          </button>
+        </div>
+
+        {/* 4 Spec Checks */}
+        <div data-pg-checks class="grid grid-cols-2 gap-2">
+          <div data-pg-check="title" class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
+            <Icon name="ph:check-circle" class="h-4 w-4 shrink-0" />
+            <span>H1 项目标题</span>
+          </div>
+          <div data-pg-check="summary" class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
+            <Icon name="ph:check-circle" class="h-4 w-4 shrink-0" />
+            <span>引用块摘要</span>
+          </div>
+          <div data-pg-check="sections" class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
+            <Icon name="ph:check-circle" class="h-4 w-4 shrink-0" />
+            <span>H2 分组列表</span>
+          </div>
+          <div data-pg-check="links" class="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2 text-xs font-medium text-muted-foreground">
+            <Icon name="ph:check-circle" class="h-4 w-4 shrink-0" />
+            <span>Markdown 链接</span>
+          </div>
+        </div>
+
+        {/* Loading skeleton (not a spinner) */}
+        <div data-pg-loading hidden aria-live="polite" class="flex flex-1 flex-col gap-3 rounded-lg border border-border bg-muted p-4">
+          <div class="h-4 w-1/3 animate-pulse rounded bg-accent"></div>
+          <div class="h-4 w-5/6 animate-pulse rounded bg-accent"></div>
+          <div class="h-4 w-2/3 animate-pulse rounded bg-accent"></div>
+          <div class="h-24 w-full animate-pulse rounded bg-accent"></div>
+        </div>
+
+        {/* Empty getting-started state */}
+        <div data-pg-empty hidden class="flex flex-1 flex-col items-center justify-center gap-3 rounded-lg border border-border bg-muted p-6 text-center">
+          <Icon name="ph:file-text" class="h-8 w-8 text-muted-foreground" />
+          <div class="max-w-sm space-y-1">
+            <p class="text-sm font-semibold text-foreground">从示例或模板快速开始</p>
+            <p class="text-xs leading-5 text-muted-foreground">
+              当前输入为空。点击上方预设示例加载标准文件，或在左侧输入以 # 开头的项目标题。
+            </p>
+          </div>
+          <button
+            type="button"
+            data-pg-restore
+            class="cursor-pointer rounded-lg border border-border bg-card px-3 py-2 text-xs font-semibold text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+          >
+            载入 FastHTML 示例
+          </button>
+        </div>
+
+        {/* JSON Output */}
+        <pre
+          data-pg-output
+          class="m-0 flex-1 overflow-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs leading-6 text-foreground max-h-96"
+        ></pre>
+      </div>
+    </div>
+
+    {/* Panel 2: Generator Form */}
+    <div data-pg-panel="generate" hidden class="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <form data-pg-form novalidate class="flex flex-col gap-4">
+        <div class="flex flex-col gap-1">
+          <label for={`${id}-project`} class="text-sm font-semibold text-foreground">
+            项目或站点名称（必填）
+          </label>
+          <input
+            id={`${id}-project`}
+            name="project"
+            type="text"
+            required
+            value="云舟开发者文档"
+            class="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
+            placeholder="例如：FastHTML"
+          />
+          <p data-pg-field-error="project" hidden class="text-xs text-danger-foreground"></p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for={`${id}-url`} class="text-sm font-semibold text-foreground">
+            站点根地址（必填）
+          </label>
+          <input
+            id={`${id}-url`}
+            name="siteUrl"
+            type="url"
+            required
+            value="https://docs.example.cn"
+            class="rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
+            placeholder="https://docs.example.cn"
+          />
+          <p data-pg-field-error="siteUrl" hidden class="text-xs text-danger-foreground"></p>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for={`${id}-summary`} class="text-sm font-semibold text-foreground">
+            一句话项目摘要
+          </label>
+          <textarea
+            id={`${id}-summary`}
+            name="summary"
+            rows={2}
+            class="rounded-lg border border-border bg-muted px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
+          >面向服务端与全栈工程师的高性能边缘计算 SDK 与 API 参考文档。</textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label for={`${id}-links`} class="text-sm font-semibold text-foreground">
+            核心文档页面（每行格式：页面名称 | 相对路径 | 简短说明）
+          </label>
+          <textarea
+            id={`${id}-links`}
+            name="links"
+            rows={4}
+            class="rounded-lg border border-border bg-muted p-3 font-mono text-xs leading-6 text-foreground placeholder:text-muted-foreground focus:border-border-strong focus:outline-none"
+          >快速开始 | /docs/quickstart.html.md | 五分钟完成 SDK 安装与首次部署
+API 参考 | /docs/api.html.md | 核心方法签名、错误码与鉴权说明
+配置项手册 | /docs/config.html.md | 环境变量与运行时参数完整对照表</textarea>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button
+            type="submit"
+            class="cursor-pointer rounded-lg bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-primary-hover active:scale-[0.98]"
+          >
+            生成规范文件与 Link 响应头
+          </button>
+          <span data-pg-gen-status aria-live="polite" class="text-xs text-muted-foreground"></span>
+        </div>
+      </form>
+
+      <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-sm font-semibold text-foreground">生成的 /llms.txt 与 HTTP 发现头</span>
+          <button
+            type="button"
+            data-pg-copy-gen
+            class="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-card px-2 py-1 text-xs font-medium text-muted-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent hover:text-foreground active:scale-[0.98]"
+          >
+            <Icon name="ph:copy" class="h-3.5 w-3.5" />
+            <span data-pg-copy-gen-label aria-live="polite">复制结果</span>
+          </button>
+        </div>
+        <pre
+          data-pg-gen-output
+          class="m-0 overflow-auto rounded-lg border border-border bg-muted p-4 font-mono text-xs leading-6 text-foreground max-h-80"
+        ></pre>
+        <div class="rounded-lg border border-border bg-muted p-3">
+          <p class="mb-1 text-xs font-semibold text-foreground">配套 HTTP Link 响应头（v2 推荐）</p>
+          <code data-pg-gen-header class="block overflow-x-auto font-mono text-xs text-muted-foreground"></code>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import "./llms-playground.client";
+</script>

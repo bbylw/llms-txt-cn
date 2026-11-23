@@ -1,0 +1,85 @@
+---
+title: "完整示例与编写指南"
+description: "FastHTML 真实项目示例、中文文档站模板、四条编写准则以及三步实测落地流程。"
+sidebar:
+  order: 1
+lastUpdated: 2026-08-10
+---
+
+## FastHTML 官方示例
+
+下面是一份截取自 FastHTML 项目的 `llms.txt` 精简示例（另可查阅[官方完整版本](https://www.fastht.ml/docs/llms.txt)）：
+
+```markdown
+# FastHTML
+
+> FastHTML is a python library which brings together Starlette, Uvicorn, HTMX, and fastcore's `FT` "FastTags" into a library for creating server-rendered hypermedia applications.
+
+Important notes:
+
+- Although parts of its API are inspired by FastAPI, it is *not* compatible with FastAPI syntax and is not targeted at creating API services
+- FastHTML is compatible with JS-native web components and any vanilla JS library, but not with React, Vue, or Svelte.
+
+## Docs
+
+- [FastHTML quick start](https://fastht.ml/docs/tutorials/quickstart_for_web_devs.html.md): A brief overview of many FastHTML features
+- [HTMX reference](https://github.com/bigskysoftware/htmx/blob/master/www/content/reference.md): Brief description of all HTMX attributes, CSS classes, headers, events, extensions, js lib methods, and config options
+
+## Examples
+
+- [Todo list application](https://github.com/AnswerDotAI/fasthtml/blob/main/examples/adv_app.py): Detailed walk-thru of a complete CRUD app in FastHTML showing idiomatic use of FastHTML and HTMX patterns.
+
+## Optional
+
+- [Starlette full documentation](https://gist.githubusercontent.com/jph00/809e4a4808d4510be0e3dc9565e9cbd3/raw/9b717589ca44cedc8aaf00b2b8cacef922964c0f/starlette-sml.md): A subset of the Starlette documentation useful for FastHTML development.
+```
+
+## 中文技术文档站模板示例
+
+如果你的团队正在维护中文开源框架或 SaaS API 文档，可以参考如下结构组织 `/llms.txt`：
+
+```markdown
+# 云舟边缘计算 SDK
+
+> 云舟 SDK 提供面向服务端与边缘节点的 TypeScript 运行时封装，涵盖对象存储、KV 缓存与实时消息路由能力。
+
+重要说明：
+
+- 本 SDK 要求运行环境支持 Web Fetch API（如 Bun 1.2+、Cloudflare Workers 或 Node.js 22+）
+- 所有异步方法均返回标准 Promise，不再支持回调风格接口
+
+## 核心文档
+
+- [快速开始](https://docs.example.cn/docs/quickstart.html.md): 安装依赖、初始化客户端并完成首次请求
+- [鉴权与签名](https://docs.example.cn/docs/auth.html.md): 访问密钥管理、HMAC 签名算法与权限边界说明
+- [API 方法参考](https://docs.example.cn/docs/api.html.md): 全部导出函数参数类型、返回值与错误码表
+
+## Optional
+
+- [迁移指南（v1 到 v2）](https://docs.example.cn/docs/migration.html.md): 旧版 API 废弃对照与平滑升级步骤
+```
+
+## 编写高质量 `llms.txt` 的四条准则
+
+要创建真正高效、能显著提升 AI 回答准确率的 `llms.txt`，请遵循以下四项核心建议：
+
+1. **使用简洁、清晰的语言**：剔除营销修辞，直接写明项目定位、技术栈边界与常见误区（如示例中的「虽受 FastAPI 启发但语法并不兼容」）。
+2. **在链接旁附上简短而有信息量的说明**：不要只列出裸链接或标题，用一句话交代该页面具体解决什么问题，帮助智能体精准判断是否需要点开抓取。
+3. **避免歧义词或未经解释的黑话**：确保项目内部专有名词在首次出现时即有清晰定义。
+4. **用真实智能体进行端到端测试**：把你的 `llms.txt` 作为唯一初始上下文交给智能体，向它提出关于你产品的真实开发问题，观察它能否选对链接并给出正确代码。
+
+## 三步落地接入流程
+
+<Steps>
+  1. **编写并发布 `/llms.txt` 索引文件**
+
+     按五段式规范组织标题、摘要、关键注意事项与分组链接清单，优先将链接指向干净的 `.md` 页面版本。
+
+  2. **为文档页面提供同路径 `.md` 版本**
+
+     可采用追加扩展名（`page.html.md`）或替换扩展名（`page.md`）；若采用现代静态框架（如 Cloudflare Nimbus 或 nbdev），构建阶段会自动产出所有页面的 Markdown 副本。
+
+  3. **配置发现链接并验证输出**
+
+     在页面 HTML `<head>` 或 CDN HTTP 响应头中添加 `rel="alternate" type="text/markdown"` 与 `rel="describedby"`，并使用 Chrome Lighthouse 或[在线解析器](/docs/parser/)核验结构是否完整。
+</Steps>

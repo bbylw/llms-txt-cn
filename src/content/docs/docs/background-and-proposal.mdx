@@ -1,0 +1,77 @@
+---
+title: "背景与提案"
+description: "为何提出 /llms.txt v2 标准，以及页面 Markdown 版本与标准 Link 发现关系的完整设计。"
+sidebar:
+  order: 2
+lastUpdated: 2026-08-10
+---
+
+## 背景（Background）
+
+如今，智能体（Agents）正在高频地使用各类网站：编程智能体需要拉取代码库的文档以确保 API 调用准确无误，具备联网搜索能力的对话助手会阅读产品页面来回答用户提问。当这一提案在 2024 年首次提出时，这在很大程度上还只是一种预测；而在今天，它已成为日常常态。
+
+然而，传统的网页是为「人类读者」构建的。一个 HTML 页面往往将核心信息包裹在导航栏、广告、脚本与样板标签之中，将其反向还原为干净文本不仅过程繁琐，而且结果常常不够精确。尽管模型的上下文窗口比过去大了许多，但对于绝大多数完整网站而言依然远远不够，并且每一个被浪费的 Token 都在增加时间与资金成本。智能体最需要的，是集中在单一、易于访问位置上的精炼、专家级信息。
+
+本规范为 **v2 修订版**，基于过去两年行业落地实践中总结出的经验进行了更新：如今已有数以千计的站点发布了 `llms.txt` 文件，[主流文档平台已支持自动生成](https://www.mintlify.com/docs/ai/llmstxt)，Chrome Lighthouse 也将其纳入[智能体浏览审计项（agentic browsing checks）](https://developer.chrome.com/docs/lighthouse/agentic-browsing/llms-txt)。各大头部 AI 实验室同样为自家的开发者文档发布了 `llms.txt` 文件：
+
+- [OpenAI 开发者文档 llms.txt](https://developers.openai.com/llms.txt)
+- [Anthropic 文档 llms.txt](https://docs.anthropic.com/llms.txt)
+- [Google Gemini API 文档 llms.txt](https://ai.google.dev/gemini-api/docs/llms.txt)
+
+关于 v2 相比 v1 的具体演进细节与原因，请参阅[v2 变更记录](/docs/changes/)。
+
+## 核心提案（Proposal）
+
+我们提议在网站上添加一个 `/llms.txt` Markdown 文件，用于提供对大语言模型友好的核心内容。该文件既可以放置在网站根目录（`/llms.txt`），也可以放置在站点内的任意子路径下，用来涵盖该路径之下的页面。该文件主要提供简明扼要的背景介绍、使用指引以及指向详细 Markdown 文档的链接。
+
+`llms.txt` 所采用的 Markdown 格式兼顾了人类与大语言模型的可读性，同时遵循足够精确的结构规范，使传统编程技术（如解析器与正则表达式）同样可以稳定处理。
+
+### 为页面提供干净的 Markdown 版本
+
+我们进一步提议：对于包含智能体可能需要读取信息的页面，应在与原始页面相同的 URL 位置提供干净的 Markdown 版本，具体支持两种命名方式：
+
+1. **在完整 URL 后追加 `.md`**：例如 `page.html` 对应 `page.html.md`。
+2. **将原有扩展名替换为 `.md`**：例如 `page.html` 对应 `page.md`。
+3. **无明确文件名的路径**：对于以目录结尾的 URL，应追加 `index.html.md` 或 `index.md`（例如 `/docs/` 对应 `/docs/index.html.md` 或 `/docs/index.md`）。
+
+### 标准 Link 发现关系（v2 新增）
+
+为了帮助客户端无需猜测即可发现这些文件，我们推荐使用标准链接关系：
+
+- `rel="alternate" type="text/markdown"`：指向当前页面的干净 Markdown 版本。
+- `rel="describedby"`：指向覆盖当前页面的 `llms.txt` 索引文件（例如 `/docs/llms.txt` 描述 `/docs/` 目录下的所有页面）。
+
+这些链接既可以作为 HTML `<link>` 标签嵌入页面 `<head>`，也可以作为 HTTP `Link:` 响应头返回。响应头方式同样适用于 Markdown 文件等非 HTML 资源，并且可以直接在 Web 服务器或 CDN 配置中统一添加，无需改动任何现有页面源码。
+
+<Tabs syncKey="discovery-method">
+  <TabItem label="HTTP Link 响应头（推荐）">
+    ```http
+    Link: </docs/page.html.md>; rel="alternate"; type="text/markdown", </docs/llms.txt>; rel="describedby"
+    ```
+  </TabItem>
+  <TabItem label="HTML link 标签">
+    ```html
+    <link rel="alternate" type="text/markdown" href="/docs/page.html.md" />
+    <link rel="describedby" href="/docs/llms.txt" />
+    ```
+  </TabItem>
+</Tabs>
+
+### 真实项目案例与工作流
+
+[FastHTML 项目](https://fastht.ml) 在其官方文档中完整遵循了上述两项提案：
+
+- 文档索引放置于 `/docs/` 子路径下，专门覆盖文档区域：[FastHTML 文档 llms.txt](https://www.fastht.ml/docs/llms.txt)。
+- 常规网页与同路径 Markdown 版本并存：[FastHTML 示例教程（HTML 版）](https://www.fastht.ml/docs/tutorials/by_example.html) 与完全相同路径追加扩展名的 [Markdown 版本](https://www.fastht.ml/docs/tutorials/by_example.html.md)。
+
+此外，所有 [nbdev](https://nbdev.fast.ai/) 项目现已默认在构建时为全部页面生成 `.md` 版本。Answer.AI 与 fast.ai 旗下全部采用 nbdev 的开源软件项目均已重新生成文档并启用该特性，例如 [fastcore `docments` 模块的 HTML 文档](https://fastcore.fast.ai/docments.html) 及其对应的 [Markdown 版本](https://fastcore.fast.ai/docments.html.md)。
+
+### 智能体消费模式与适用场景
+
+智能体的预期工作方式是：先查看或检索 `llms.txt` 以找到所需线索，再按需访问相关链接。因此，`llms.txt` 中的链接应当指向上述页面 Markdown 版本等对模型友好的内容。索引文件自身保持足够精炼，可以轻松放进上下文窗口；详尽细节则留在链接背后，仅在需要时按需抓取。
+
+目前 `llms.txt` 最常用于软件开发文档，帮助编程智能体快速查找 API 参考与入门教程。实际上，这套结构适用于任何需要为智能体提供清晰入口的场景：
+
+- 企业官网清晰列出公司架构、服务说明与公开政策
+- 个人主页集中整理履历、作品集与专业背景以回答访客提问
+- 学校或教育机构开放课程大纲、教学资料与选课指引

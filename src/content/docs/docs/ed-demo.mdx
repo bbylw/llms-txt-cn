@@ -1,0 +1,62 @@
+---
+title: "编辑器集成演示（ed demo）"
+description: "以幽默经典的 Unix 行编辑器 ed 为例，展示编辑器与编程工具如何加载 llms.txt 上下文并辅助生成代码。"
+sidebar:
+  order: 4
+lastUpdated: 2026-08-10
+---
+
+在 Answer.AI 官方仓库中，[`ed.qmd`](https://github.com/AnswerDotAI/llms-txt/blob/main/nbs/ed.qmd) 用一段颇具极客幽默感的虚构演示，说明了哪怕是最古老、最极简的经典 Unix 行编辑器 `ed`，在接入 `llms.txt` 后也能变成高效的 AI 编程助手。
+
+下面还原了这段完整的交互流程，帮助你直观理解现代 IDE、命令行助手与编辑工具是如何利用 `llms.txt` 的。
+
+## 从加载文档索引开始
+
+首先，用户启动 `ed`，使用假设扩展的 `llms` 命令加载 FastHTML 项目的 `llms.txt` 文档索引作为上下文：
+
+```sh
+$ ed
+* llms https://docs.fastht.ml/llms.txt
+正在获取并处理来自 https://docs.fastht.ml/llms.txt 的上下文...
+上下文加载完成，当前可开始向 AI 提问。
+```
+
+编辑器在后台抓取该文档清单及其链接指向的干净 Markdown 内容，为大语言模型准备好精确的框架知识，并保持 `ed` 一贯的沉静克制，仅输出简明的状态提示。
+
+## 借助上下文生成应用代码
+
+接下来，用户输入假设的 `x`（eXecute AI）命令，指令 AI 结合刚才加载的 `llms.txt` 上下文创建一个最简单的 FastHTML 应用：
+
+```sh
+* x 创建一个在 <div> 中输出 'Hello, World!' 的极简 FastHTML 应用。
+正在分析上下文与指令...
+正在生成 FastHTML 应用代码...
+已将生成的应用写入缓冲区。
+```
+
+由于 `llms.txt` 中明确给出了 FastHTML 与 Starlette、HTMX 的惯用模式以及常见差异提示，模型不会幻觉出过时或不兼容的语法，而是直接输出地道的 FastHTML 写法。
+
+## 查看并保存最终文件
+
+随后，用户查看缓冲区中的总行数（`n`）并打印文件内容（`p`），可以看到仅用 5 行代码就完成了一个可运行的服务端应用：
+
+```sh
+* n
+5
+* p
+from fasthtml.common import *
+app,rt = fast_app()
+@rt
+def index(): return div("Hello, World!")
+serve()
+```
+
+最后，用户将代码写入 `hello_world.py` 并退出编辑器（`q`）：
+
+```sh
+* w hello_world.py
+5
+* q
+```
+
+这正是 `llms.txt` 设计初衷的缩影：不需要把整座文档站塞进编辑器，只需让工具顺着简洁清晰的索引获取当前任务真正需要的专业知识。

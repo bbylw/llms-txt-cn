@@ -1,0 +1,57 @@
+---
+title: "JavaScript 解析器"
+description: "在浏览器中直接体验 llms.txt v2 在线解析校验与模板生成，并查看官方参考 JavaScript 解析源码。"
+sidebar:
+  order: 3
+lastUpdated: 2026-08-10
+---
+
+`llms.txt` 兼顾了自然语言可读性与结构确定性。使用一段不足 25 行的纯 JavaScript 代码，即可将任何符合规范的 `llms.txt` 文件解析为标准的 JSON 对象。
+
+## 在线解析校验与生成演练场
+
+你可以在下方直接编辑或加载预设的 `llms.txt` 示例，实时查看校验结果与解析后的 JSON 结构；也可以切换到「快速生成模板」标签页，快速生成一套符合 v2 规范的文件与 HTTP 响应头。
+
+<LlmsPlayground id="docs-playground" />
+
+## 官方参考实现源码（源自 `llmstxt-js.html`）
+
+以下是 Answer.AI 官方仓库中提供的标准 JavaScript 解析函数实现（已做健壮性增强，支持可选 BOM 与空格清理）：
+
+```javascript title="parse-llms-txt.js"
+function parseLLMsTxt(raw) {
+  const txt = raw.replace(/^\uFEFF/, "").trim();
+
+  function parseLinks(links) {
+    const linkPat =
+      /^-\s*\[(?<title>[^\]]+)\]\((?<url>[^)]+)\)(?::\s*(?<desc>.*?))?$/gm;
+    return Array.from(links.matchAll(linkPat)).map((match) => match.groups);
+  }
+
+  const [start, ...rest] = txt.split(/^##\s*(.*?)$/m);
+  const sections = Object.fromEntries(
+    Array.from({ length: Math.floor(rest.length / 2) }, (_, i) => [
+      rest[i * 2].trim(),
+      parseLinks(rest[i * 2 + 1]),
+    ])
+  );
+
+  const pat =
+    /^#\s*(?<title>.+?)(?:\n+(?:^>\s*(?<summary>[^\n]+))?(?:\n+(?<info>.*))?)?$/ms;
+  const match = start.trim().match(pat);
+
+  return {
+    ...(match?.groups ?? {}),
+    sections,
+  };
+}
+```
+
+## 解析输出字段说明
+
+| 字段名 | 类型 | 说明 |
+| --- | --- | --- |
+| `title` | `string` | 来自首部唯一 H1 标题的项目或站点名称 |
+| `summary` | `string \| undefined` | 来自紧随 H1 之后的 `>` 引用块的项目摘要 |
+| `info` | `string` | 位于摘要之后、首个 `##` 之前补充说明文本 |
+| `sections` | `Record<string, LinkItem[]>` | 以各个 `##` 二级标题为键的分组链接字典，每条包含 `title`、`url` 与可选 `desc` |

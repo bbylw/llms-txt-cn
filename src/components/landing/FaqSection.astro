@@ -1,0 +1,199 @@
+---
+export interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+export const faqs: FaqItem[] = [
+  {
+    question: "/llms.txt 与 robots.txt 有什么区别，需要同时保留吗？",
+    answer:
+      "两者职责完全不同，应当共存。robots.txt 用于告知网络爬虫哪些路径允许或禁止抓取；llms.txt 则是面向按需推理阶段的专家级导航索引，在智能体协助用户查询资料时，为其提供精炼背景与最相关的 Markdown 链接。",
+  },
+  {
+    question: "为什么不能直接用 sitemap.xml 代替 /llms.txt？",
+    answer:
+      "sitemap.xml 面向搜索引擎列出全站所有 HTML 页面，通常不包含干净的 Markdown 版本链接，也不能指向外部依赖文档；此外，全量站点地图汇总后的体积往往远超模型的上下文窗口，且夹杂大量非核心页面。",
+  },
+  {
+    question: "为什么规范选择路径下的 /llms.txt，而不是 /.well-known/？",
+    answer:
+      "RFC 8615 规定的 /.well-known/ 只能部署在源站根目录。大量创作者仅对共享主机上的子路径拥有发布权限（例如 GitHub Pages 项目站点）。将 llms.txt 放在任意子路径下，可以准确描述该子目录覆盖的文档范围。",
+  },
+  {
+    question: "页面 Markdown 版本应该命名为 page.html.md 还是 page.md？",
+    answer:
+      "v2 规范同时允许这两种形式。既可以在原 URL 末尾直接追加 .md（如 page.html.md），也可以将原有扩展名替换为 .md（如 page.md）；没有文件名的目录 URL 则追加 index.html.md 或 index.md。",
+  },
+  {
+    question: "客户端如何无需猜测就能发现页面的 Markdown 版本和 llms.txt？",
+    answer:
+      "v2 规范推荐使用两个标准链接关系：rel=\"alternate\" type=\"text/markdown\" 指向当前页面的 Markdown 版本，rel=\"describedby\" 指向覆盖该页面的 llms.txt 文件。既可写入 HTML <link> 标签，也可通过 HTTP Link: 响应头下发。",
+  },
+  {
+    question: "如果网站根路径和 /docs/ 子路径都放了 llms.txt，以哪个为准？",
+    answer:
+      "根据 v2 规范的定义，每个 llms.txt 文件描述其所在路径及之下的所有 URL。当多个文件同时适用某个页面时，智能体应选择路径最具体的那一份（例如 /docs/page.html 优先遵循 /docs/llms.txt）。",
+  },
+  {
+    question: "v2 规范中 ## Optional 分组还有什么作用？",
+    answer:
+      "v2 移除了早期 llms_txt2ctx 上下文批量展开工具及其机械剔除逻辑，因此 Optional 不再具有强制语义；但它依然是广泛采用的实用惯例，用来标注当智能体需要更精简上下文时可以安全跳过的次要链接。",
+  },
+  {
+    question: "如何在不修改现有网页源码的情况下快速落地 v2 规范？",
+    answer:
+      "可以在 Web 服务器或 CDN 层直接配置 HTTP Link: 响应头，为页面返回 alternate Markdown 链接与 describedby 索引链接；同时配合如 Mintlify、GitBook 或 Cloudflare Nimbus 等支持自动生成 .md 与 llms.txt 的工具链实现零侵入接入。",
+  },
+];
+---
+
+<section
+  id="faq-accordion"
+  class="faq-accordion mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20"
+  aria-labelledby="faq-heading"
+>
+  <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="font-mono text-xs font-medium text-muted-foreground">FAQ · 常见问题</p>
+      <h2 id="faq-heading" class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+        关于 /llms.txt v2 的关键解答
+      </h2>
+    </div>
+    <button
+      type="button"
+      commandfor="faq-accordion"
+      command="--toggle-all"
+      aria-expanded="false"
+      class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
+    >
+      <span class="faq-expand-label">展开全部</span>
+      <span class="faq-collapse-label">收起全部</span>
+    </button>
+  </div>
+
+  <div class="flex flex-col gap-3">
+    {faqs.map((item, idx) => (
+      <details open={idx === 0} class="faq-item rounded-xl border border-border bg-card">
+        <summary class="faq-summary px-4 py-4 text-base font-semibold text-foreground">
+          <span>{item.question}</span>
+        </summary>
+        <div class="faq-content px-4 pb-4 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">
+          <p>{item.answer}</p>
+        </div>
+      </details>
+    ))}
+  </div>
+</section>
+
+<style>
+  [command="--toggle-all"][aria-expanded="true"] .faq-expand-label,
+  [command="--toggle-all"][aria-expanded="false"] .faq-collapse-label {
+    display: none;
+  }
+
+  .faq-summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .faq-summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq-summary:hover {
+    background-color: var(--nb-accent);
+  }
+  .faq-summary::before {
+    content: "";
+    inline-size: 1rem;
+    block-size: 1rem;
+    flex-shrink: 0;
+    background-color: currentColor;
+    opacity: 0.65;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M48 96l80 80 80-80' fill='none' stroke='black' stroke-width='24' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+      no-repeat center / contain;
+    rotate: -90deg;
+  }
+  .faq-item[open] > .faq-summary::before {
+    rotate: 0deg;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .faq-summary::before {
+      transition: rotate 300ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  }
+
+  .faq-item::details-content {
+    interpolate-size: allow-keywords;
+    overflow: clip;
+    contain: layout;
+  }
+  .faq-item:not([open])::details-content {
+    block-size: 0;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .faq-item::details-content {
+      transition: block-size, content-visibility, display;
+      transition-duration: 300ms;
+      transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      transition-behavior: allow-discrete;
+    }
+  }
+</style>
+
+<script>
+  import { mount } from "@cloudflare/nimbus-docs/client";
+
+  mount("#faq-accordion", (section) => {
+    const toggleBtn = section.querySelector<HTMLButtonElement>('[command="--toggle-all"]');
+    const items = Array.from(section.querySelectorAll<HTMLDetailsElement>("details.faq-item"));
+    if (!toggleBtn || items.length === 0) return () => {};
+
+    const controller = new AbortController();
+    const { signal } = controller;
+
+    function syncButton() {
+      const allOpen = items.every((d) => d.open);
+      toggleBtn!.setAttribute("aria-expanded", String(allOpen));
+    }
+
+    function toggleAll() {
+      const expand = toggleBtn!.getAttribute("aria-expanded") !== "true";
+      items.forEach((d) => {
+        d.open = expand;
+      });
+      syncButton();
+    }
+
+    if (Object.hasOwn(HTMLButtonElement.prototype, "commandForElement")) {
+      section.addEventListener(
+        "command",
+        (event) => {
+          const cmdEvent = event as Event & { command?: string };
+          if (cmdEvent.command !== "--toggle-all") return;
+          toggleAll();
+        },
+        { capture: true, signal },
+      );
+    } else {
+      toggleBtn.addEventListener("click", toggleAll, { signal });
+    }
+
+    section.addEventListener(
+      "toggle",
+      (event) => {
+        if (event.target instanceof HTMLDetailsElement && event.target.matches("details.faq-item")) {
+          syncButton();
+        }
+      },
+      { capture: true, signal },
+    );
+
+    syncButton();
+    return () => controller.abort();
+  });
+</script>

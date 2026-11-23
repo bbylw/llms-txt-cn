@@ -1,0 +1,120 @@
+---
+import Logo from "./Logo.astro";
+import type { SidebarSection } from "@cloudflare/nimbus-docs/types";
+import Icon from "@cloudflare/nimbus-docs/components/Icon.astro";
+import { Button } from "./ui/button";
+import { LinkButton } from "./ui/link-button";
+import { ThemeToggle } from "./ui/theme-toggle";
+import SearchTrigger from "./ui/search/SearchTrigger.astro";
+import { ShortcutsToggle } from "./ui/shortcuts";
+import { config } from "virtual:nimbus/config";
+import { stripBase, withBase } from "@cloudflare/nimbus-docs/runtime";
+
+interface Props {
+  collection?: string;
+  entryId?: string;
+  showSidebar?: boolean;
+  sections?: SidebarSection[];
+}
+
+const { showSidebar = true } = Astro.props;
+
+const currentSlug = stripBase(Astro.url.pathname, import.meta.env.BASE_URL).replace(/\/$/, "") || "/";
+const homeHref = withBase("/", import.meta.env.BASE_URL);
+const navItems = [
+  { label: "首页", href: withBase("/", import.meta.env.BASE_URL), active: currentSlug === "/" },
+  {
+    label: "规范文档",
+    href: withBase("/docs/", import.meta.env.BASE_URL),
+    active: currentSlug.startsWith("/docs") && !currentSlug.startsWith("/docs/changes") && !currentSlug.startsWith("/docs/parser"),
+  },
+  {
+    label: "v2 变更",
+    href: withBase("/docs/changes/", import.meta.env.BASE_URL),
+    active: currentSlug.startsWith("/docs/changes"),
+  },
+  {
+    label: "解析器",
+    href: withBase("/docs/parser/", import.meta.env.BASE_URL),
+    active: currentSlug.startsWith("/docs/parser"),
+  },
+];
+---
+
+<header class="sticky top-0 z-30 border-b border-border bg-card/85 backdrop-blur-lg">
+  <div class="mx-auto flex items-center justify-between gap-3 h-14 px-4 lg:px-6">
+    <div class="flex items-center gap-3 min-w-0">
+      <slot name="brand">
+        <a href={homeHref} class="flex shrink-0 items-center gap-2 text-foreground no-underline transition-opacity duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:opacity-75">
+          <Logo class="h-5 w-7 shrink-0" />
+          <span class="font-mono text-sm font-semibold tracking-tight">llms.txt</span>
+        </a>
+      </slot>
+
+      <nav aria-label="主导航" class="hidden md:flex items-center gap-1 ms-3 ps-4 border-s border-border h-6 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {navItems.map((item) => (
+          <a
+            href={item.href}
+            aria-current={item.active ? "page" : undefined}
+            class:list={[
+              "px-2.5 py-1 rounded-md text-sm leading-5 font-medium no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 whitespace-nowrap",
+              item.active
+                ? "text-foreground bg-accent"
+                : "text-muted-foreground hover:text-foreground hover:bg-accent/60",
+            ]}
+          >
+            {item.label}
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="flex items-center gap-2 shrink-0">
+      <slot name="actions" />
+      {config.search !== false && <SearchTrigger />}
+      {config.search === false && <ShortcutsToggle compact />}
+      {config.github && (
+        <LinkButton
+          href={config.github}
+          variant="minimal"
+          shape="square"
+          size="sm"
+          aria-label="GitHub 仓库"
+          target="_blank"
+          rel="noopener"
+          class="text-muted-foreground"
+        >
+          <Icon name="ph:github-logo" class="w-4 h-4" />
+        </LinkButton>
+      )}
+      <ThemeToggle />
+      {showSidebar && (
+        <Button
+          variant="ghost"
+          shape="square"
+          size="sm"
+          icon="ph:list"
+          aria-label="打开导航菜单"
+          data-menu-btn
+          class="md:hidden text-muted-foreground"
+        />
+      )}
+    </div>
+  </div>
+  <nav aria-label="移动端栏目导航" data-nb-header-tabs class="md:hidden flex items-center gap-1 h-10 px-4 border-t border-border overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    {navItems.map((item) => (
+      <a
+        href={item.href}
+        aria-current={item.active ? "page" : undefined}
+        class:list={[
+          "px-2.5 py-1 rounded-md text-xs leading-4 font-medium no-underline transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] shrink-0 whitespace-nowrap",
+          item.active
+            ? "text-foreground bg-accent"
+            : "text-muted-foreground hover:text-foreground hover:bg-accent/60",
+        ]}
+      >
+        {item.label}
+      </a>
+    ))}
+  </nav>
+</header>

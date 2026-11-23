@@ -1,0 +1,52 @@
+---
+title: "/llms.txt 规范 v2 中文文档"
+description: "一份建议网站通过 /llms.txt 文件向大语言模型与 AI 智能体提供结构化核心信息与 Markdown 入口的开放提案。"
+sidebar:
+  order: 1
+  label: "规范总览"
+lastUpdated: 2026-08-10
+---
+
+`/llms.txt` 是由 [Jeremy Howard](https://x.com/jeremyphoward)（Answer.AI）发起的一项开放网络标准提案：初版发布于 2024 年 9 月 3 日，**v2 修订版发布于 2026 年 8 月 10 日**。
+
+本提案建议网站在根路径 `/llms.txt`（或任意子路径，如 `/docs/llms.txt`）提供一个同时对人类读者与大语言模型友好的 Markdown 索引文件，配合干净的页面 `.md` 版本以及标准 Link 发现关系，帮助编程智能体、对话助手与检索工具快速定位并读取高价值信息。
+
+<Aside type="tip" title="本站自身的 v2 实践">
+  当前文档站使用 Cloudflare Nimbus 与 Bun 构建，自身即完整遵循 `/llms.txt` v2 规范：全站输出 [`/llms.txt`](/llms.txt)、[`/llms-full.txt`](/llms-full.txt)、[`/docs/llms.txt`](/docs/llms.txt) 以及每个页面对应的 `index.md` 版本，并在页面头部声明了 `rel="alternate" type="text/markdown"` 与 `rel="describedby"` 发现链接。
+</Aside>
+
+## 快速导航
+
+<CardGrid>
+  <Card title="背景与提案" icon="ph:book-open-text" href="/docs/background-and-proposal/">
+    了解为何 HTML 网页难以被智能体高效消费，以及 /llms.txt、页面 .md 版本与 Link 发现关系的完整设计。
+  </Card>
+  <Card title="格式规范" icon="ph:list-numbers" href="/docs/format/">
+    查看 /llms.txt 文件的五段式结构要求、路径作用域规则与 Optional 区块的 v2 语义。
+  </Card>
+  <Card title="与现有标准对比" icon="ph:git-diff" href="/docs/existing-standards/">
+    厘清 llms.txt 与 robots.txt、sitemap.xml 及 Well Known URI（RFC 8615）各自解决的问题与边界。
+  </Card>
+  <Card title="完整示例与编写指南" icon="ph:file-code" href="/docs/examples/">
+    参考 FastHTML 真实范例、四项核心编写准则以及三步落地验证流程。
+  </Card>
+  <Card title="跨行业应用指南" icon="ph:buildings" href="/docs/domains/">
+    探索软件文档之外，餐饮门店、企业门户、个人简历与教育课程如何编写 llms.txt。
+  </Card>
+  <Card title="JavaScript 解析器" icon="ph:terminal-window" href="/docs/parser/">
+    在网页中直接测试官方参考解析逻辑，或实时生成合规的 llms.txt 与 HTTP Link 响应头。
+  </Card>
+  <Card title="目录与生态集成" icon="ph:puzzle-piece" href="/docs/integrations/">
+    浏览官方收录目录、自动生成平台（Mintlify、GitBook、Nimbus 等）以及开源工具插件。
+  </Card>
+  <Card title="v2 变更记录" icon="ph:clock-counter-clockwise" href="/docs/changes/">
+    了解 2026 年 8 月 v2 修订相比 2024 年 v1 的四项关键演进与背后原因。
+  </Card>
+</CardGrid>
+
+## 原文与授权说明
+
+- **英文原版提案**：[AnswerDotAI/llms-txt · nbs/index.qmd](https://github.com/AnswerDotAI/llms-txt/blob/main/nbs/index.qmd)
+- **初版日期**：2024 年 9 月 3 日
+- **v2 修订日期**：2026 年 8 月 10 日
+- **作者**：Jeremy Howard

@@ -1,0 +1,40 @@
+---
+title: "目录与生态集成"
+description: "收录 llms.txt 站点的公共目录、自动生成文档平台，以及主流开源库、插件与 MCP 工具清单。"
+sidebar:
+  order: 1
+lastUpdated: 2026-08-10
+---
+
+随着规范的普及，越来越多的目录网站、文档托管平台和开源工具链已经原生支持生成、解析或索引 `llms.txt` 文件。
+
+## 公共目录站点
+
+以下几个开放目录网站专门收录并展示互联网上已发布的 `llms.txt` 文件，适合用来参考各家优秀写作实践或提交你的站点：
+
+- [llmstxt.site](https://llmstxt.site/)
+- [directory.llmstxt.cloud](https://directory.llmstxt.cloud/)
+- [llmstxthub.com](https://llmstxthub.com/)
+
+## 自动生成的文档平台与 CMS
+
+许多文档托管平台与内容管理系统已内置支持自动生成 `llms.txt` 及页面 Markdown 版本：
+
+- **[Mintlify](https://www.mintlify.com/docs/ai/llmstxt)**：为托管的每个文档站自动生成 `llms.txt` 与逐页 Markdown 版本。
+- **[GitBook](https://www.gitbook.com/blog/what-is-llms-txt)**：为已发布的知识库与文档站自动提供 `llms.txt` 文件。
+- **[Cloudflare Nimbus](https://nimbus-docs.com/)**：基于 Astro 的开源文档框架（本站即由 Nimbus 构建），在构建阶段自动生成根 `/llms.txt`、分目录 `/<section>/llms.txt`、`/llms-full.txt` 以及每页的 `index.md` 与 `index.mdx` 副本。
+- **[Yoast SEO](https://yoast.com/features/llms-txt/)**：支持自动生成并维护 `llms.txt` 的 WordPress 插件。
+- **[AIOSEO](https://aioseo.com/features/llms-txt/)**：内置 `llms.txt` 生成器的 WordPress 插件。
+- **[Wix](https://support.wix.com/en/article/understanding-your-sites-llmstxt-file)**：为每个 Wix 站点自动生成对应的 `llms.txt` 文件。
+
+## 开源库、插件与智能体工具
+
+如果你希望将 `llms.txt` 规范集成到自定义前端工程、编辑器或 MCP 工作流中，可以选用以下社区项目：
+
+- **[JavaScript 解析实现](/docs/parser/)**：本站内置的中文交互式解析演示与完整参考代码。
+- **[`vitepress-plugin-llms`](https://github.com/okineadev/vitepress-plugin-llms)**：为 VitePress 站点自动生成符合 `llms.txt` 规范文档的插件。
+- **[`docusaurus-plugin-llms`](https://github.com/rachfop/docusaurus-plugin-llms)**：在 Docusaurus 构建流程中自动输出 LLM 友好文档与索引的插件。
+- **[Drupal LLM Support](https://www.drupal.org/project/llm_support)**：为 Drupal 10.3 及以上站点提供完整 `llms.txt` 支持的 Drupal Recipe。
+- **[`llms-txt-php`](https://github.com/raphaelstolt/llms-txt-php)**：用于读写和解析 `llms.txt` Markdown 文件的 PHP 工具库。
+- **[VS Code PagePilot Extension](https://dmux.github.io/pagepilot)**：VS Code Chat 扩展参与者，可自动加载外部文档、API 与 README 上下文以提升问答质量。
+- **[`server-llm-txt`](https://github.com/mcp-get/community-servers/tree/main/src/server-llm-txt)**：Model Context Protocol（MCP）服务端，使支持 MCP 的智能体能够直接拉取并检索站点 `llms.txt` 文件。
