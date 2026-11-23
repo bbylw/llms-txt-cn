@@ -157,14 +157,14 @@ const ecosystemTools = [
 
     <main id="main-content" tabindex="-1" class="flex-1">
       {/* 1. Hero (Above the fold) */}
-      <section class="mx-auto max-w-6xl px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-20">
+      <section class="mx-auto max-w-6xl px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-24">
         <div class="mx-auto flex max-w-[680px] flex-col items-center text-center">
-          <span class="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 font-mono text-xs font-medium text-muted-foreground">
+          <span class="inline-flex items-center gap-2 rounded-md border border-border bg-card px-2.5 py-1 font-mono text-xs font-medium text-muted-foreground">
             <Icon name="ph:sparkle" class="h-3.5 w-3.5 text-brand" />
             <span>v2 规范 · 2026 年 8 月修订</span>
           </span>
 
-          <h1 class="hero-title-gradient mt-6 text-balance text-4xl leading-tight font-semibold tracking-tight sm:text-5xl md:text-6xl">
+          <h1 class="hero-title-gradient mt-6 text-balance text-4xl leading-[1.18] font-semibold tracking-tight sm:text-5xl md:text-6xl">
             为 AI 智能体打造的
             <br />
             站点 Markdown 导航规范
@@ -195,7 +195,7 @@ const ecosystemTools = [
         {/* Hero Visual: HTML Noise vs Clean /llms.txt */}
         <div class="mt-12 rounded-2xl border border-border bg-card p-2 shadow-sm">
           <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
-            <div class="rounded-lg border border-border bg-muted p-4 sm:p-6">
+            <div class="flex flex-col rounded-lg border border-border bg-muted p-4 sm:p-6">
               <div class="mb-3 flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <Icon name="ph:warning-circle" class="h-4 w-4 text-warning-foreground" />
@@ -205,15 +205,25 @@ const ecosystemTools = [
                   解析噪音大
                 </span>
               </div>
-              <pre class="m-0 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-muted-foreground"><code>{`<nav class="mega-menu">...42 个导航链接...</nav>
+              <pre class="m-0 flex-1 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-muted-foreground"><code>{`<header class="site-header">
+  <nav class="mega-menu">...42 个导航链接...</nav>
+</header>
 <aside class="ad-banner">...促销弹窗脚本...</aside>
 <script src="/analytics-bundle.js"></script>
+<script src="/chat-widget.js"></script>
 <main class="prose-wrapper">
-  <div class="card-shadow">...核心 API 说明...</div>
+  <div class="card-shadow">
+    <!-- 正文淹没在多层嵌套 DOM 与样式类名中 -->
+    <p>...核心 API 说明...</p>
+  </div>
 </main>`}</code></pre>
+              <div class="mt-2 rounded-lg border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground">
+                <span class="font-semibold text-foreground">主要痛点：</span>
+                <span>大量非正文标签消耗上下文窗口，且缺少跨页结构索引</span>
+              </div>
             </div>
 
-            <div class="rounded-lg border border-border bg-muted p-4 sm:p-6">
+            <div class="flex flex-col rounded-lg border border-border bg-muted p-4 sm:p-6">
               <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
                   <Icon name="ph:check-circle" class="h-4 w-4 text-success-foreground" />
@@ -237,7 +247,7 @@ const ecosystemTools = [
                   </a>
                 </div>
               </div>
-              <pre data-hero-code class="m-0 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-foreground"><code>{heroSampleLlms}</code></pre>
+              <pre data-hero-code class="m-0 flex-1 overflow-x-auto rounded-lg border border-border bg-card p-4 font-mono text-xs leading-6 text-foreground"><code>{heroSampleLlms}</code></pre>
               <div class="mt-2 rounded-lg border border-border bg-card px-3 py-2 font-mono text-xs text-muted-foreground overflow-x-auto">
                 <span class="font-semibold text-foreground">HTTP 发现头：</span>
                 <span>{heroSampleLinkHeader}</span>
@@ -248,7 +258,7 @@ const ecosystemTools = [
       </section>
 
       {/* 2. Problem -> Solution */}
-      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section id="why" class="nb-reveal scroll-mt-24 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div class="mb-8 max-w-[680px]">
           <p class="font-mono text-xs font-medium text-muted-foreground">WHY LLMS.TXT</p>
           <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -257,9 +267,9 @@ const ecosystemTools = [
         </div>
 
         <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <article class="rounded-2xl border border-border bg-card p-6">
-            <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Icon name="ph:browsers" class="h-5 w-5 text-muted-foreground" />
+          <article class="rounded-2xl bg-muted/70 p-6 sm:p-8">
+            <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+              <Icon name="ph:browsers" class="h-5 w-5" />
               <span>传统网页抓取的三重瓶颈</span>
             </div>
             <ul class="space-y-3 text-sm leading-6 text-muted-foreground">
@@ -278,7 +288,7 @@ const ecosystemTools = [
             </ul>
           </article>
 
-          <article class="rounded-2xl border border-border bg-card p-6">
+          <article class="rounded-2xl border border-border-strong bg-card p-6 sm:p-8">
             <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
               <Icon name="ph:file-md" class="h-5 w-5 text-brand" />
               <span>/llms.txt v2 的精准解法</span>
@@ -302,22 +312,27 @@ const ecosystemTools = [
       </section>
 
       {/* 3. Benefits */}
-      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
-        <div class="mb-8 max-w-[680px]">
-          <p class="font-mono text-xs font-medium text-muted-foreground">CORE BENEFITS</p>
+      <section id="benefits" class="nb-reveal scroll-mt-24 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+        <div class="mb-10 max-w-[680px]">
+          <p class="font-mono text-xs font-medium tracking-wider text-muted-foreground">CORE BENEFITS</p>
           <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
             一份纯文本文件带来的四项实际收益
           </h2>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {benefits.map((item) => (
-            <article class="rounded-2xl border border-border bg-card p-6 transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:border-border-strong">
-              <div class="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
+        <div class="grid grid-cols-1 gap-x-10 gap-y-8 border-t border-border pt-8 sm:grid-cols-2">
+          {benefits.map((item, idx) => (
+            <article class="flex items-start gap-4">
+              <div class="mt-0.5 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                 <Icon name={item.icon} class="h-5 w-5" />
               </div>
-              <h3 class="text-lg font-semibold text-foreground">{item.title}</h3>
-              <p class="mt-2 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">{item.detail}</p>
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-xs font-medium text-muted-foreground">0{idx + 1}</span>
+                  <h3 class="text-lg font-semibold text-foreground">{item.title}</h3>
+                </div>
+                <p class="mt-2 max-w-[52ch] text-sm leading-6 text-muted-foreground [text-wrap:pretty]">{item.detail}</p>
+              </div>
             </article>
           ))}
         </div>
@@ -327,7 +342,7 @@ const ecosystemTools = [
       <TaglineReveal />
 
       {/* 5. How it works (3 Steps) */}
-      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section id="how-it-works" class="nb-reveal scroll-mt-24 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div class="mb-8 max-w-[680px]">
           <p class="font-mono text-xs font-medium text-muted-foreground">HOW IT WORKS</p>
           <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -350,7 +365,7 @@ const ecosystemTools = [
       </section>
 
       {/* 6. Interactive Parser & Generator Playground */}
-      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section id="playground" class="nb-reveal scroll-mt-24 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div class="mb-8 max-w-[680px]">
           <p class="font-mono text-xs font-medium text-muted-foreground">INTERACTIVE PLAYGROUND</p>
           <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -364,7 +379,7 @@ const ecosystemTools = [
       </section>
 
       {/* 7. Social Proof & Ecosystem */}
-      <section class="nb-reveal mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+      <section id="ecosystem" class="nb-reveal scroll-mt-24 mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div class="mb-8 max-w-[680px]">
           <p class="font-mono text-xs font-medium text-muted-foreground">ECOSYSTEM & ADOPTION</p>
           <h2 class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
@@ -470,7 +485,7 @@ const ecosystemTools = [
                   rel="noopener noreferrer"
                   class="no-underline hover:text-foreground transition-colors"
                 >
-                  访问 GitHub 原仓库
+                  访问 GitHub
                 </a>
               </div>
             </div>
@@ -531,28 +546,49 @@ const ecosystemTools = [
     const targets = Array.from(main.querySelectorAll<HTMLElement>(".nb-reveal"));
     if (targets.length === 0) return () => {};
 
+    const reveal = (el: Element) => {
+      el.removeAttribute("data-reveal-state");
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
-            entry.target.removeAttribute("data-reveal-state");
+          if (entry.isIntersecting || entry.boundingClientRect.top < window.innerHeight) {
+            reveal(entry.target);
             observer.unobserve(entry.target);
           }
         }
       },
-      { threshold: 0.08, rootMargin: "0px 0px -40px 0px" },
+      { threshold: 0.01 },
     );
+
+    const syncVisible = () => {
+      for (const el of targets) {
+        if (!el.hasAttribute("data-reveal-state")) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= window.innerHeight * 0.96) {
+          reveal(el);
+          observer.unobserve(el);
+        }
+      }
+    };
 
     targets.forEach((el) => {
       const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.92) {
-        el.removeAttribute("data-reveal-state");
+      if (rect.top <= window.innerHeight * 0.96) {
+        reveal(el);
       } else {
         el.setAttribute("data-reveal-state", "pending");
         observer.observe(el);
       }
     });
 
-    return () => observer.disconnect();
+    const onHash = () => window.requestAnimationFrame(syncVisible);
+    window.addEventListener("hashchange", onHash);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("hashchange", onHash);
+    };
   });
 </script>

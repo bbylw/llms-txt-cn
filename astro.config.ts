@@ -133,7 +133,10 @@ const nimbusConfig = defineNimbusConfig({
         items: [
           "docs/examples",
           "docs/domains",
+          "docs/nbdev-guide",
           "docs/parser",
+          "docs/python-cli",
+          "docs/python-source",
           "docs/ed-demo",
         ],
       },

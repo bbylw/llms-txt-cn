@@ -49,151 +49,27 @@ export const faqs: FaqItem[] = [
 ---
 
 <section
-  id="faq-accordion"
-  class="faq-accordion mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-20"
+  id="faq"
+  class="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20"
   aria-labelledby="faq-heading"
 >
-  <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="font-mono text-xs font-medium text-muted-foreground">FAQ · 常见问题</p>
-      <h2 id="faq-heading" class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-        关于 /llms.txt v2 的关键解答
-      </h2>
-    </div>
-    <button
-      type="button"
-      commandfor="faq-accordion"
-      command="--toggle-all"
-      aria-expanded="false"
-      class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm font-semibold text-foreground transition-colors duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:bg-accent active:scale-[0.98]"
-    >
-      <span class="faq-expand-label">展开全部</span>
-      <span class="faq-collapse-label">收起全部</span>
-    </button>
+  <div class="mb-10 max-w-[680px]">
+    <p class="font-mono text-xs font-medium tracking-wider text-muted-foreground">FAQ · 常见问题</p>
+    <h2 id="faq-heading" class="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+      关于 /llms.txt v2 的关键解答
+    </h2>
   </div>
 
-  <div class="flex flex-col gap-3">
-    {faqs.map((item, idx) => (
-      <details open={idx === 0} class="faq-item rounded-xl border border-border bg-card">
-        <summary class="faq-summary px-4 py-4 text-base font-semibold text-foreground">
-          <span>{item.question}</span>
-        </summary>
-        <div class="faq-content px-4 pb-4 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">
-          <p>{item.answer}</p>
-        </div>
-      </details>
+  <dl class="grid grid-cols-1 gap-x-10 gap-y-8 border-t border-border pt-8 md:grid-cols-2">
+    {faqs.map((item) => (
+      <div class="space-y-2">
+        <dt class="text-base font-semibold leading-6 text-foreground [text-wrap:balance]">
+          {item.question}
+        </dt>
+        <dd class="m-0 text-sm leading-6 text-muted-foreground [text-wrap:pretty]">
+          {item.answer}
+        </dd>
+      </div>
     ))}
-  </div>
+  </dl>
 </section>
-
-<style>
-  [command="--toggle-all"][aria-expanded="true"] .faq-expand-label,
-  [command="--toggle-all"][aria-expanded="false"] .faq-collapse-label {
-    display: none;
-  }
-
-  .faq-summary {
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    cursor: pointer;
-    user-select: none;
-    transition: background-color 300ms cubic-bezier(0.22, 1, 0.36, 1);
-  }
-  .faq-summary::-webkit-details-marker {
-    display: none;
-  }
-  .faq-summary:hover {
-    background-color: var(--nb-accent);
-  }
-  .faq-summary::before {
-    content: "";
-    inline-size: 1rem;
-    block-size: 1rem;
-    flex-shrink: 0;
-    background-color: currentColor;
-    opacity: 0.65;
-    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M48 96l80 80 80-80' fill='none' stroke='black' stroke-width='24' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      no-repeat center / contain;
-    rotate: -90deg;
-  }
-  .faq-item[open] > .faq-summary::before {
-    rotate: 0deg;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .faq-summary::before {
-      transition: rotate 300ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-  }
-
-  .faq-item::details-content {
-    interpolate-size: allow-keywords;
-    overflow: clip;
-    contain: layout;
-  }
-  .faq-item:not([open])::details-content {
-    block-size: 0;
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .faq-item::details-content {
-      transition: block-size, content-visibility, display;
-      transition-duration: 300ms;
-      transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-      transition-behavior: allow-discrete;
-    }
-  }
-</style>
-
-<script>
-  import { mount } from "@cloudflare/nimbus-docs/client";
-
-  mount("#faq-accordion", (section) => {
-    const toggleBtn = section.querySelector<HTMLButtonElement>('[command="--toggle-all"]');
-    const items = Array.from(section.querySelectorAll<HTMLDetailsElement>("details.faq-item"));
-    if (!toggleBtn || items.length === 0) return () => {};
-
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    function syncButton() {
-      const allOpen = items.every((d) => d.open);
-      toggleBtn!.setAttribute("aria-expanded", String(allOpen));
-    }
-
-    function toggleAll() {
-      const expand = toggleBtn!.getAttribute("aria-expanded") !== "true";
-      items.forEach((d) => {
-        d.open = expand;
-      });
-      syncButton();
-    }
-
-    if (Object.hasOwn(HTMLButtonElement.prototype, "commandForElement")) {
-      section.addEventListener(
-        "command",
-        (event) => {
-          const cmdEvent = event as Event & { command?: string };
-          if (cmdEvent.command !== "--toggle-all") return;
-          toggleAll();
-        },
-        { capture: true, signal },
-      );
-    } else {
-      toggleBtn.addEventListener("click", toggleAll, { signal });
-    }
-
-    section.addEventListener(
-      "toggle",
-      (event) => {
-        if (event.target instanceof HTMLDetailsElement && event.target.matches("details.faq-item")) {
-          syncButton();
-        }
-      },
-      { capture: true, signal },
-    );
-
-    syncButton();
-    return () => controller.abort();
-  });
-</script>

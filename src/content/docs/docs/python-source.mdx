@@ -1,0 +1,160 @@
+---
+title: "Python 核心源码与 API"
+description: "深入解析 llms_txt.core 模块的正则提取、结构化解析与 XML 上下文生成函数参考文档。"
+sidebar:
+  order: 5
+lastUpdated: 2026-08-10
+---
+
+本页整理自官方 [`core.html`](https://llmstxt.org/core.html) 文档，完整梳理了 `llms_txt.core` 模块的底层实现思路、正则表达式构建器与公开 API 接口，适合希望自建解析器或扩展 CLI 工具的开发者参考。
+
+## 正则表达式辅助函数
+
+`llms_txt` 采用由内向外（outside-in）的方式拼装正则，先独立验证单个链接字段，再组合成整份文件的解析规则。
+
+### `search`
+
+```python
+def search(pat, txt, flags: int = 0)
+```
+
+在文本 `txt` 中匹配模式 `pat`，并以字典形式返回命名捕获组（named capture groups）结果。
+
+### `named_re`
+
+```python
+def named_re(nm, pat)
+```
+
+将正则模式 `pat` 包装为名称为 `nm` 的 Python 命名捕获组（`(?P<nm>pat)`）。
+
+### `opt_re`
+
+```python
+def opt_re(s)
+```
+
+将模式 `s` 包装为可选非捕获组（`(?:s)?`），用于匹配可选的链接描述 `:` 后缀或可选引用块。
+
+## 链接与章节解析（Reading）
+
+### 链接匹配规则拆解
+
+以一条标准的链接列表项为例：
+
+```text
+- [FastHTML quick start](https://fastht.ml/docs/tutorials/quickstart_for_web_devs.html.md): A brief overview of FastHTML features
+```
+
+核心正则按如下三步逐步组合：
+
+```python
+title = named_re("title", r"[^\]]+")
+url = named_re("url", r"[^\)]+")
+desc = named_re("desc", r".*")
+pat = rf"-\s*\[{title}\]\({url}\)" + opt_re(rf":\s*{desc}")
+```
+
+### `parse_link`
+
+```python
+def parse_link(txt)
+```
+
+从单行列表项中提取 `title`、`url` 与 `desc` 字典。即使缺少冒号描述或 `-` 后无空格，也能正确返回：
+
+```python
+parse_link("-[foo](http://foo)")
+# {'title': 'foo', 'url': 'http://foo', 'desc': None}
+```
+
+### 章节切分与 `parse_llms_file`
+
+面对包含多个 `##` 二级标题的完整文档，`core` 模块先使用 `re.split(rf'^##\s*(.*?$)', sections, flags=re.MULTILINE)` 将文档切分为「头部区块 `start`」与「成对的 `(标题, 正文)` 列表 `rest`」，再通过 `chunked(rest, 2)` 构造字典并对每个分组调用 `_parse_links`。
+
+最终公开的入口函数为：
+
+```python
+def parse_llms_file(txt)
+```
+
+将 `llms.txt` 原文解析为一个 `AttrDict`，支持直接通过属性访问：
+
+```python
+llmsd = parse_llms_file(samp)
+llmsd.summary
+# "FastHTML is a python library which brings together ..."
+
+llmsd.sections.Examples
+# [{'title': 'Todo list application', 'url': '...', 'desc': '...'}]
+```
+
+## XML 上下文转换（XML conversion）
+
+针对偏爱结构化 XML 标签的对话模型（如 Claude），`llms_txt.core` 提供了一组抓取外链并拼装 `<project>` 上下文的函数。
+
+### `get_doc_content`
+
+```python
+def get_doc_content(url)
+```
+
+根据链接地址读取文档文本；如果当前位于 `nbdev` 项目仓库本地环境中，会优先从本地文档文件读取，避免重复发起网络请求。
+
+### `mk_ctx`
+
+```python
+def mk_ctx(d, optional: bool = True, n_workers: int | None = None)
+```
+
+根据 `parse_llms_file` 返回的数据结构 `d` 构建 `Project` XML 对象，为每个 `##` 二级标题生成对应的 `Section` 节点，支持通过 `optional` 控制是否保留 `Optional` 分组，以及通过 `n_workers` 指定并发下载线程数。可通过 `to_xml(ctx, do_escape=False)` 导出最终字符串。
+
+### `get_sizes`
+
+```python
+def get_sizes(ctx)
+```
+
+统计已构建的上下文 `ctx` 中每个分组、每篇文档各自占用的字符数，方便评估是否超出目标模型的上下文窗口预算：
+
+```python
+get_sizes(ctx)
+# {
+#   'docs': {
+#     'FastHTML quick start': 35321,
+#     'HTMX reference': 28365,
+#     'Starlette quick guide': 7936
+#   },
+#   'examples': {
+#     'Todo list application': 16032
+#   },
+#   'optional': {
+#     'Starlette full documentation': 48331
+#   }
+# }
+```
+
+### `create_ctx`
+
+```python
+def create_ctx(txt, optional: bool = False, n_workers: int | None = None)
+```
+
+一站式封装函数：接收原始 `llms.txt` 字符串 `txt`，内部完成解析、并发抓取并直接返回序列化后的 XML 上下文字符串。注意其默认 `optional=False`（跳过 `Optional` 分组）。
+
+### `llms_txt2ctx`
+
+```python
+def llms_txt2ctx(
+    fname: str,                   # 要读取的 llms.txt 文件路径
+    optional: bool = False,       # 是否包含 'optional' 分组
+    n_workers: int | None = None, # 并行下载使用的线程数
+    save_nbdev_fname: str | None = None, # 保存至 nbdev `{docs_path}` 目录而非输出到 stdout
+)
+```
+
+面向 CLI 的入口函数（由 `fastcore.script` 驱动）。在终端或 Jupyter Notebook 中可直接执行：
+
+```sh
+llms_txt2ctx llms-sample.txt > ../fasthtml.md
+```

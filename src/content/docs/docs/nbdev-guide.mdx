@@ -1,0 +1,111 @@
+---
+title: "nbdev 与 Quarto 项目集成指南"
+description: "结合官方 nbdev 教程，了解如何编写面向代码库的 llms.txt，并用 pysym2md 自动生成 API 符号参考。"
+sidebar:
+  order: 6
+lastUpdated: 2026-08-10
+---
+
+本篇内容译注并整理自 `llmstxt.org` 的实战教程 [How to help LLMs understand your nbdev project](https://llmstxt.org/nbdev.html)（作者：Radek Osmulski）。
+
+`nbdev` 默认会为每个文档页面同步输出干净的 `.md` 版本，因此天然具备发布 `/llms.txt` 所需的底层页面资源。虽然本指南以 `nbdev` + Quarto 为例，但其核心方法——**清晰的项目提示 + 结构化文档链接 + 自动提取的符号表**——适用于任何软件库项目。
+
+## 第一步：编写项目根目录的 `llms.txt`
+
+首先在项目文档目录（`nbdev` 中为 `nbs/`）创建 `llms.txt`，以标准的 H1 标题和引用块摘要开头，紧接着列出使用该库时智能体最容易踩坑的“核心约定”。
+
+以 `fastcore` 项目的 `llms.txt` 片段为例：
+
+```markdown
+# fastcore
+
+> 扩展 Python 标准库基础能力的工具集，服务于 fastai 与 FastHTML 生态。
+
+使用 fastcore 时的几项核心建议：
+
+- **放心使用通配符导入**：可以自由使用 `from fastcore.module import *`，库内部专门为安全的通配符导入做了导出控制。
+- **增强列表 `L`**：使用 `L` 替代原生 `list`，支持高级索引、链式调用及额外辅助方法，同时兼容标准列表行为。
+- **扩展既有类**：使用 `@patch` 装饰器为既有类（包括 Python 内置类型）直接挂载新方法，无需通过继承子类即可组织代码。
+```
+
+<Aside type="tip" title="高效撰写项目说明的三个技巧">
+  1. **复用已有素材**：从项目的 `README`、核心博客文章或常见社区问答中提炼重点；
+  2. **像给新同事做交接一样介绍**：思考“如果一位新成员今天刚接手这个库，最需要先知道哪三条经验”；
+  3. **让大模型辅助压缩**：先让 AI 汇总多份文档，再人工删去冗长修辞，只保留高密度约束信息。
+</Aside>
+
+## 第二步：添加文档与示例代码区块
+
+在项目概览之后，使用 `##` 二级标题组织文档和示例代码链接。虽然链接可以指向任意格式，但**强烈建议优先指向 `.md` 页面**（HTML 标签噪声太大，CSV 等格式又缺少语义上下文）：
+
+```markdown
+## Docs
+
+- [Surreal](https://host/README.md): Tiny jQuery alternative with Locality of Behavior
+- [FastHTML quick start](https://host/quickstart.html.md): An overview of FastHTML features
+
+## Examples
+
+- [Todo app](https://host/adv_app.py)
+
+## Optional
+
+- [Starlette docs](https://host/starlette-sml.md): A subset of the Starlette docs
+```
+
+`## Optional` 分组适合放置体积较大、仅在深度排查时才需要查阅的辅助参考资料，以便智能体在上下文窗口紧张时按需取舍。
+
+## 第三步：用 `pysym2md` 自动生成 `apilist.txt`
+
+大语言模型通常理解宏观设计，但面对冷门或新近迭代的 API 时，很容易因为训练数据过时而编造函数名或参数签名。
+
+为此，可以使用 [`pysym2md`](https://github.com/AnswerDotAI/pysym2md) 自动扫描代码库中的函数、类与 docstring，生成一份纯 Markdown 格式的完整符号索引 `apilist.txt`。以下是 `fastcore` 生成的 `apilist.txt` 节选：
+
+```markdown
+# fastcore Module Documentation
+
+## fastcore.ansi
+
+> Filters for processing ANSI colors.
+
+- `def strip_ansi(source)`
+    Remove ANSI escape codes from text.
+
+- `def ansi2html(text)`
+    Convert ANSI colors to HTML colors.
+
+- `def ansi2latex(text)`
+    Convert ANSI colors to LaTeX colors.
+```
+
+即使是 `numpy` 这样的大型库，也只需一行命令即可生成完整符号表：
+
+```sh
+pysym2md numpy
+```
+
+生成后将其随文档站点一起发布，并在 `llms.txt` 的文档区块中添上一条指向 `apilist.txt` 的链接即可。
+
+## 第四步：在 `nbdev` 与 Quarto 中自动化构建
+
+完成本地验证后，只需三处配置即可在每次文档构建时自动刷新并发布 `apilist.txt` 与 `llms.txt`：
+
+1. 将手写的 `llms.txt` 放入项目的 `nbs/` 目录；
+2. 在 `settings.ini` 的开发依赖中加入 `pysym2md`：
+
+```ini title="settings.ini"
+dev_requirements = pysym2md
+```
+
+3. 在 `nbs/_quarto.yml` 中配置 `pre-render` 钩子与静态资源白名单，确保 `.txt` 文件被原样复制到构建输出目录：
+
+```yaml title="nbs/_quarto.yml"
+project:
+  type: website
+  pre-render:
+    - pysym2md --output-file apilist.txt your_pkg
+  resources:
+    - "*.txt"
+```
+
+最后别忘了在 `nbs/llms.txt` 中手动加入指向 `apilist.txt` 的链接，提交更改并重新构建文档后，智能体就能准确查阅你项目的最新符号与文档了。

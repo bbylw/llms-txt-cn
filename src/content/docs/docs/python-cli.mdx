@@ -1,0 +1,153 @@
+---
+title: "Python 模块与 CLI"
+description: "通过官方 llms-txt Python 包与 llms_txt2ctx 命令行工具解析 /llms.txt 文件，并生成适用于大语言模型的 XML 上下文。"
+sidebar:
+  order: 4
+lastUpdated: 2026-08-10
+---
+
+Answer.AI 官方提供了 `llms-txt` Python 工具包（对应官网 [`intro.html`](https://llmstxt.org/intro.html)），包含命令行工具 `llms_txt2ctx` 与 Python 解析 API，可将任意合规的 `/llms.txt` 文件解析为结构化对象，或展开为适用于 Claude 等大语言模型的 XML 上下文文件。
+
+<Aside type="note" title="与 v2 规范定位的说明">
+  在 2026 年 8 月发布的 v2 规范中，提案本身已不再把“上下文展开工具”与 `Optional` 区块的机器跳过语义作为标准强制要求——现代智能体通常会直接检索索引并按需读取相关 `.md` 链接。但 `llms-txt` Python 包及 `llms_txt2ctx` 在需要**离线打包单文件上下文**、**测试模型问答效果**或**在脚本中解析 `llms.txt`** 时依然非常实用。
+</Aside>
+
+## 安装
+
+使用 `pip` 直接安装官方包：
+
+```sh
+pip install llms-txt
+```
+
+或使用 `uv` 在隔离环境中运行：
+
+```sh
+uv tool install llms-txt
+```
+
+输入文件需遵循标准 `/llms.txt` Markdown 格式，例如：
+
+```markdown
+# FastHTML
+
+> FastHTML is a python library which...
+
+When writing FastHTML apps remember to:
+
+- Thing to remember
+
+## Docs
+
+- [Surreal](https://host/README.md): Tiny jQuery alternative with Locality of Behavior
+- [FastHTML quick start](https://host/quickstart.html.md): An overview of FastHTML features
+
+## Examples
+
+- [Todo app](https://host/adv_app.py)
+
+## Optional
+
+- [Starlette docs](https://host/starlette-sml.md): A subset of the Starlette docs
+```
+
+## 命令行工具（`llms_txt2ctx`）
+
+安装完成后，终端中即可直接使用 `llms_txt2ctx` 命令。查看完整参数帮助：
+
+```sh
+llms_txt2ctx -h
+```
+
+将本地 `llms.txt` 文件中引用的文档抓取并展开为 XML 格式上下文，保存为 `llms.md`：
+
+```sh
+llms_txt2ctx llms.txt > llms.md
+```
+
+默认情况下 `llms_txt2ctx` 会跳过 `## Optional` 分组以控制上下文体积；如果希望一并纳入可选扩展资料，可传入 `--optional True`：
+
+```sh
+llms_txt2ctx llms.txt --optional True > llms-full.md
+```
+
+## Python API 用法
+
+在 Python 代码中导入模块并读取文件：
+
+```python
+from pathlib import Path
+from llms_txt import *
+
+samp = Path("llms-sample.txt").read_text()
+```
+
+### 使用 `parse_llms_file` 解析为结构化对象
+
+`parse_llms_file` 会返回一个支持属性访问的字典结构（`AttrDict`），包含 `title`、`summary`、`info` 与 `sections` 四个字段：
+
+```python
+parsed = parse_llms_file(samp)
+list(parsed)
+# ['title', 'summary', 'info', 'sections']
+
+parsed.title, parsed.summary
+# ('FastHTML', 'FastHTML is a python library which brings together ...')
+
+list(parsed.sections)
+# ['Docs', 'Examples', 'Optional']
+
+parsed.sections.Optional[0]
+# {
+#   'desc': 'A subset of the Starlette documentation useful for FastHTML development.',
+#   'title': 'Starlette full documentation',
+#   'url': 'https://gist.githubusercontent.com/.../starlette-sml.md'
+# }
+```
+
+### 使用 `create_ctx` 生成 XML 上下文
+
+`create_ctx` 会并发拉取各分组链接对应的文档内容，并将其组装为带有 `<project>` 与分组标签的 XML 文本（`llms_txt2ctx` CLI 底层正是调用该函数）：
+
+```python
+ctx = create_ctx(samp)
+print(ctx[:300])
+```
+
+输出示例：
+
+```xml
+<project title="FastHTML" summary='FastHTML is a python library which brings together Starlette, Uvicorn, HTMX, and fastcore&#39;s `FT` "FastTags" into a library for creating server-rendered hypermedia applications.'>
+Remember:
+
+- Use `serve()` for running uvicorn (`if __name__ == "__main__"` is not ...
+```
+
+若需要包含 `Optional` 分组，可传入 `optional=True`：`create_ctx(samp, optional=True)`。
+
+## 不足 20 行的零依赖参考实现
+
+为了直观展示 `llms.txt` 格式有多易于解析，官方在文档中给出了一段**不依赖任何第三方库、不足 20 行**的纯 Python 标准库解析实现，并通过了 `tests/test-parse.py` 测试套件验证：
+
+```python title="minimal_parse.py"
+from pathlib import Path
+import re, itertools
+
+def chunked(it, chunk_sz):
+    it = iter(it)
+    return iter(lambda: list(itertools.islice(it, chunk_sz)), [])
+
+def parse_llms_txt(txt):
+    "Parse llms.txt file contents in `txt` to a `dict`"
+    def _p(links):
+        link_pat = r'-\s*\[(?P<title>[^\]]+)\]\((?P<url>[^\)]+)\)(?::\s*(?P<desc>.*))?'
+        return [re.search(link_pat, l).groupdict()
+                for l in re.split(r'\n+', links.strip()) if l.strip()]
+
+    start, *rest = re.split(rf'^##\s*(.*?$)', txt, flags=re.MULTILINE)
+    sects = {k: _p(v) for k, v in dict(chunked(rest, 2)).items()}
+    pat = r'^#\s*(?P<title>.+?$)\n+(?:^>\s*(?P<summary>.+?$)$)?\n+(?P<info>.*)'
+    d = re.search(pat, start.strip(), (re.MULTILINE | re.DOTALL)).groupdict()
+    d['sections'] = sects
+    return d
+```

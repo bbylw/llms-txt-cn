@@ -22,22 +22,11 @@ const { showSidebar = true } = Astro.props;
 const currentSlug = stripBase(Astro.url.pathname, import.meta.env.BASE_URL).replace(/\/$/, "") || "/";
 const homeHref = withBase("/", import.meta.env.BASE_URL);
 const navItems = [
-  { label: "首页", href: withBase("/", import.meta.env.BASE_URL), active: currentSlug === "/" },
-  {
-    label: "规范文档",
-    href: withBase("/docs/", import.meta.env.BASE_URL),
-    active: currentSlug.startsWith("/docs") && !currentSlug.startsWith("/docs/changes") && !currentSlug.startsWith("/docs/parser"),
-  },
-  {
-    label: "v2 变更",
-    href: withBase("/docs/changes/", import.meta.env.BASE_URL),
-    active: currentSlug.startsWith("/docs/changes"),
-  },
-  {
-    label: "解析器",
-    href: withBase("/docs/parser/", import.meta.env.BASE_URL),
-    active: currentSlug.startsWith("/docs/parser"),
-  },
+  { label: "核心收益", href: `${homeHref}#benefits`, active: false },
+  { label: "三步接入", href: `${homeHref}#how-it-works`, active: false },
+  { label: "演练场", href: `${homeHref}#playground`, active: false },
+  { label: "生态采纳", href: `${homeHref}#ecosystem`, active: false },
+  { label: "文档", href: withBase("/docs/", import.meta.env.BASE_URL), active: currentSlug.startsWith("/docs") },
 ];
 ---
 
