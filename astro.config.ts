@@ -106,7 +106,7 @@ function utf8OutputIntegration(): AstroIntegration {
 }
 
 const nimbusConfig = defineNimbusConfig({
-  site: "https://llmstxt.cn",
+  site: "https://llms-txt.ndjp.net",
   title: "llms.txt 中文站",
   description:
     "/llms.txt 规范 v2 中文站：通过结构化 Markdown 索引与标准 Link 关系，让 AI 智能体高效读取网站核心内容。",

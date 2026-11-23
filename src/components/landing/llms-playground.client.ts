@@ -47,13 +47,13 @@ Important notes:
 
 ## 核心文档
 
-- [五分钟快速上手](https://llmstxt.cn/docs/index.md): 安装脚手架、配置站点规范并启动本地预览
-- [格式规范详解](https://llmstxt.cn/docs/format/index.md): 了解 H1、引用块与 H2 文件列表的精确顺序
-- [v2 变更日志](https://llmstxt.cn/docs/changes/index.md): 2026 年 8 月修订中关于标准 Link 关系与子路径作用域的更新
+- [五分钟快速上手](https://llms-txt.ndjp.net/docs/index.md): 安装脚手架、配置站点规范并启动本地预览
+- [格式规范详解](https://llms-txt.ndjp.net/docs/format/index.md): 了解 H1、引用块与 H2 文件列表的精确顺序
+- [v2 变更日志](https://llms-txt.ndjp.net/docs/changes/index.md): 2026 年 8 月修订中关于标准 Link 关系与子路径作用域的更新
 
 ## Optional
 
-- [常见问题与对比](https://llmstxt.cn/docs/existing-standards/index.md): 与 robots.txt、sitemap.xml 及 Well-Known URI 的差异对比`,
+- [常见问题与对比](https://llms-txt.ndjp.net/docs/existing-standards/index.md): 与 robots.txt、sitemap.xml 及 Well-Known URI 的差异对比`,
 
   subpath: `# FastHTML Docs
 

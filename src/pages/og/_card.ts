@@ -103,7 +103,7 @@ async function renderSvgCard({
   ${sectionSvg}
   ${titleSvg}
   <line x1="${LEFT}" y1="518" x2="${WIDTH - LEFT}" y2="518" stroke="#272727" stroke-width="1.5" />
-  <text x="${LEFT}" y="556" font-family="'Geist Mono', 'Microsoft YaHei', monospace" font-size="20" fill="#A3A3A3">llmstxt.cn · /llms.txt 标准中文站</text>
+  <text x="${LEFT}" y="556" font-family="'Geist Mono', 'Microsoft YaHei', monospace" font-size="20" fill="#A3A3A3">llms-txt.ndjp.net · /llms.txt v2 中文文档</text>
   <text x="${WIDTH - LEFT}" y="556" text-anchor="end" font-family="'Geist', 'Microsoft YaHei', sans-serif" font-size="20" fill="#A3A3A3">Answer.AI 提案中文版</text>
 </svg>`;
 
